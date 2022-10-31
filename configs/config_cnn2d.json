@@ -1,0 +1,52 @@
+{
+    "name": "cnn2d_model_with_VCC2018_wav2vec2-xls-r-300m",
+    "n_gpu": 1,
+
+    "arch": {
+        "type": "cnn2d_model",
+        "args": {}
+    },
+    "data_loader": {
+        "type": "CNN2DEmbeddingsDataloader",
+        "args":{
+            "data_dir": "./wav2vec2-base/VCC2018_wav2vec_embeddings/",
+            "metadata_file": "train.csv",
+            "val_metadata_file": "test.csv",
+            "emb_dir": "data",
+            "train_batch_size": 4,
+            "val_batch_size": 2,
+            "shuffle": false,
+            "validation_split": 0.05
+        }
+    },
+    "optimizer": {
+        "type": "Adam",
+        "args":{
+            "lr": 0.001,
+            "weight_decay": 0,
+            "amsgrad": true
+        }
+    },
+    "loss": "mse_loss",
+    "metrics": [
+        "accuracy", "top_k_acc"
+    ],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 100,
+            "gamma": 0.01
+        }
+    },
+    "trainer": {
+        "save_dir": "saved",
+        "log_dir": "logs",
+        "log_step": 25,
+        "save_period": 1,
+        "verbosity": 2,
+        "monitor": "min val_loss",
+        "early_stop": 10,
+        "epochs": 500,
+        "tensorboard": true
+    }
+}

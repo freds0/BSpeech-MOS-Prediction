@@ -1,0 +1,55 @@
+{
+    "name": "DenseModel_with_VCC2018_wav2vec2-xls-r-300m",
+    "n_gpu": 1,
+
+    "arch": {
+        "type": "Wav2Vec2MOS",
+        "args": {
+            "input_dim": 1024
+        }
+    },
+    "data_loader": {
+        "type": "Wav2vecEmbeddingsDataloader",
+        "args":{
+            "data_dir": "./embeddings/VCC2018_embeddings_wav2vec2-xls-r-300m/",
+            "metadata_file": "train.csv",
+            "val_metadata_file": "test.csv",
+            "emb_dir": "data",
+            "train_batch_size": 256,
+            "val_batch_size": 256,
+            "shuffle": false,
+            "validation_split": 0.05
+        }
+    },
+    "optimizer": {
+        "type": "Adam",
+        "args":{
+            "lr": 0.001,
+            "weight_decay": 0,
+            "amsgrad": true
+        }
+    },
+    "loss": "mse_loss",
+    "metrics": [
+        "accuracy", "top_k_acc"
+    ],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 100,
+            "gamma": 0.1
+        }
+    },
+    "trainer": {
+        "save_dir": "saved",
+        "log_dir": "logs",
+        "log_step": 25,
+        "save_period": 1,
+        "verbosity": 2,
+        "monitor": "min val_loss",
+        "early_stop": 10,
+        "epochs": 500,
+        "save_period": 10,
+        "tensorboard": true
+    }
+}
