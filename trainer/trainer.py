@@ -31,6 +31,7 @@ class Trainer():
         self.data_loader = data_loader
         self.start_epoch = 1
         self.checkpoint_dir = config['save_dir']
+        self.n_checkpoints = config['n_checkpoints']
         self.save_period = config['save_period']
         self.len_epoch = len(self.data_loader)
         self.valid_data_loader = valid_data_loader
@@ -201,10 +202,10 @@ class Trainer():
             if ((epoch % self.save_period) == 0):
                 checkpoint_filepath = self._save_checkpoint(epoch, save_best=best)
                 saved_checkpoints.append(checkpoint_filepath)
-                self._maintain_checkpoints(saved_checkpoints, 2)
+                self._maintain_checkpoints(saved_checkpoints, self.n_checkpoints)
 
 
-    def _maintain_checkpoints(self, checkpoints_list, n_checkpoints=5):
+    def _maintain_checkpoints(self, checkpoints_list, n_checkpoints=2):
         if (len(checkpoints_list) > n_checkpoints):
             filepath = checkpoints_list.pop(0)
             os.remove(filepath)

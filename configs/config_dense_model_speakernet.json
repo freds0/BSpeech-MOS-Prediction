@@ -1,5 +1,5 @@
 {
-    "name": "DenseModel_with_VCC2018_ge2e",
+    "name": "DenseModel_with_VCC2018_SpeakerNet",
     "n_gpu": 1,
 
     "arch": {
@@ -11,9 +11,10 @@
     "data_loader": {
         "type": "TitanetEmbeddingsDataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_ge2e_embeddings/",
+            "data_dir": "./embeddings/VCC2018_speakernet_embeddings/",
             "metadata_file": "train.csv",
-            "val_metadata_file": "test.csv",
+            "val_metadata_file": "val.csv",
+            "test_metadata_file": "test.csv",
             "emb_dir": "data",
             "train_batch_size": 15000,
             "val_batch_size": 15000,

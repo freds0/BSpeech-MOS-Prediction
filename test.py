@@ -2,11 +2,11 @@ import argparse
 import collections
 import torch
 import numpy as np
-from data_loader import embeddings_dataloader as module_data
+import data_loader as module_data
 from trainer import loss as module_loss
 import model as module_arch
 from utils import prepare_device
-from trainer.trainer import Trainer
+from scipy import stats
 
 from utils.config_parser import ConfigParser
 
@@ -17,6 +17,23 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
+
+def resume_checkpoint(model, resume_path):
+    """
+    Resume from saved checkpoints
+    :param
+    model: model to be loaded
+    resume_path: Checkpoint path to be resumed
+    """
+    resume_path = str(resume_path)
+    print("Loading checkpoint: {} ...".format(resume_path))
+
+    checkpoint = torch.load(resume_path)
+    model.load_state_dict(checkpoint['state_dict'])
+
+    print("Checkpoint loaded.")
+
+
 def main(config):
     # setup data_loader instances
     data_loader = config.init_obj('data_loader', module_data)
@@ -24,6 +41,7 @@ def main(config):
 
     # build model architecture, then print to console
     model = config.init_obj('arch', module_arch)
+    resume_checkpoint(model, config.resume)
 
     # get function handles of loss and metrics
     #metrics = [getattr(module_metric, met) for met in config['metrics']]
@@ -33,22 +51,29 @@ def main(config):
     device, device_ids = prepare_device(config['n_gpu'])
     model = model.to(device)
 
-    # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
-    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
-    optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
-    lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
+    print("Testing {} using device {}".format(config["name"], device))
+    model.eval()
+    metrics = {
+        'loss': 0,
+        'pearson': 0,
+        'spearman': 0
+    }
+    with torch.no_grad():
+        for batch_idx, (data, target) in enumerate(val_data_loader):
+            data, target = data.to(device), target.to(device)
+            output = model(data)
+            loss = criterion(output, target)
+            metrics['loss'] += loss.item()
+            metrics['pearson'] += stats.spearmanr(output.squeeze().detach().cpu().numpy(),
+                                                  target.cpu().detach().numpy(), axis=None).correlation
+            metrics['spearman'] += \
+                stats.pearsonr(output.squeeze().detach().cpu().numpy(), target.cpu().detach().numpy())[0]
 
-    config.config['trainer']['save_dir'] = config.save_dir
+    metrics['loss'] = metrics['loss'] / len(val_data_loader)
+    metrics['pearson'] = metrics['pearson'] / len(val_data_loader)
+    metrics['spearman'] = metrics['spearman'] / len(val_data_loader)
 
-    print("Training {} using device {}".format(config["name"], device))
-    trainer = Trainer(model, criterion, optimizer,
-                      config=config.config['trainer'],
-                      device=device,
-                      data_loader=data_loader,
-                      valid_data_loader=val_data_loader,
-                      lr_scheduler=lr_scheduler)
-
-    trainer.train()
+    print(metrics)
 
 
 if __name__ == '__main__':
@@ -67,9 +92,6 @@ if __name__ == '__main__':
         CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'),
         CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size')
     ]
-
-    #config = ConfigParser.from_args(args, options)
-    #args = parser.parse_args()
 
     config = ConfigParser.from_args(args, options)
     main(config)
