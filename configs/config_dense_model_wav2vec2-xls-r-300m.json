@@ -17,8 +17,7 @@
             "emb_dir": "data",
             "train_batch_size": 256,
             "val_batch_size": 256,
-            "shuffle": false,
-            "validation_split": 0.05
+            "shuffle": false
         }
     },
     "optimizer": {

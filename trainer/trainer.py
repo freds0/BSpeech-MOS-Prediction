@@ -21,7 +21,7 @@ class Trainer():
     Trainer class
     """
     def __init__(self, model, criterion, optimizer, config, device,
-                 data_loader, valid_data_loader=None, lr_scheduler=None):
+                 data_loader, valid_data_loader=None, lr_scheduler=None, logger=None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
@@ -36,6 +36,7 @@ class Trainer():
         self.valid_data_loader = valid_data_loader
         self.do_validation = self.valid_data_loader is not None
         self.lr_scheduler = lr_scheduler
+        self.logger = logger
         #self.log_step = int(np.sqrt(data_loader.batch_size))
         self.log_step = config['log_step']
         # setup visualization writer instance
@@ -95,18 +96,8 @@ class Trainer():
             metrics['spearman'] += stats.pearsonr(output.squeeze().detach().cpu().numpy(), target.cpu().detach().numpy())[0]
 
             if (batch_idx % self.log_step) == 0:
-                print('Train Step: {} {} Loss: {:.6f}'.format(
-                    batch_idx,
-                    self._progress(batch_idx + 1),
-                    loss.item())
-                )
-                '''
-                self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
-                    epoch,
-                    self._progress(batch_idx),
-                    loss.item()))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
-                '''
+                self.logger.info('Train Step: {} {} Loss: {:.6f}'.format(batch_idx, self._progress(batch_idx + 1), loss.item()))
+
             if batch_idx == self.len_epoch:
                 break
 
@@ -167,14 +158,12 @@ class Trainer():
         not_improved_count = 0
         saved_checkpoints = []
         for epoch in range(self.start_epoch, self.epochs + 1):
-            print('Epoch: {}/{}'.format(epoch, self.epochs))
+            self.logger.info('Epoch: {}/{}'.format(epoch, self.epochs))
             metrics, val_metrics = self._train_epoch(epoch)
-            print("\tTrain Loss: {:.6f} Pearson Corr: {:.4f} Spearman Corr: {:.4f}".format(
-                metrics['loss'], metrics['pearson'], metrics['spearman'])
-            )
-            print("\tVal   Loss: {:.6f} Pearson Corr: {:.4f} Spearman Corr: {:.4f}".format(
-                val_metrics['loss'], val_metrics['pearson'], val_metrics['spearman'])
-            )
+
+            self.logger.info("\tTrain Loss: {:.6f} Pearson Corr: {:.4f} Spearman Corr: {:.4f}".format(metrics['loss'], metrics['pearson'], metrics['spearman']))
+            self.logger.info("\tVal   Loss: {:.6f} Pearson Corr: {:.4f} Spearman Corr: {:.4f}".format(val_metrics['loss'], val_metrics['pearson'], val_metrics['spearman']))
+
             # save tensorboard informations
             self.writer.add_scalar("Loss/train", metrics['loss'], epoch)
             self.writer.add_scalar("Pearson Correlation/train", metrics['pearson'], epoch)
@@ -193,10 +182,7 @@ class Trainer():
                     improved = (self.monitor_mode == 'min' and metrics[self.monitor_metric] <= self.monitor_best) or \
                                (self.monitor_mode == 'max' and metrics[self.monitor_metric] >= self.monitor_best)
                 except KeyError:
-                    print("Warning: Metric '{}' is not found. " + \
-                                        "Model performance monitoring is disabled.".format(self.monitor_metric))
-                    #self.logger.warning("Warning: Metric '{}' is not found. "
-                    #                    "Model performance monitoring is disabled.".format(self.mnt_metric))
+                    self.logger.error("Warning: Metric '{}' is not found. Model performance monitoring is disabled.".format(self.monitor_metric), type='ERROR')
                     self.monitor_mode = 'off'
                     improved = False
 
@@ -208,9 +194,7 @@ class Trainer():
                     not_improved_count += 1
 
                 if not_improved_count > self.early_stop:
-                    print("Validation performance didn\'t improve for {} epochs. Training stops.".format(self.early_stop))
-                    #self.logger.info("Validation performance didn\'t improve for {} epochs. "
-                    #                 "Training stops.".format(self.early_stop))
+                    self.logger.info("Validation performance didn\'t improve for {} epochs. Training stops.".format(self.early_stop))
                     break
 
 
@@ -244,14 +228,11 @@ class Trainer():
         }
         filename = os.path.join(self.checkpoint_dir, 'checkpoint-epoch{}.pth'.format(epoch))
         torch.save(state, filename)
-        #self.logger.info("Saving checkpoint: {} ...".format(filename))
-        print("Saving checkpoint: {} ...".format(filename))
+        self.logger.info("Saving checkpoint: {} ...".format(filename))
         if save_best:
             best_path = str(self.checkpoint_dir / 'model_best.pth')
             torch.save(state, best_path)
-            #self.logger.info("Saving current best: model_best.pth ...")
-            print("Saving current best: model_best.pth ...")
-
+            self.logger.info("Saving current best: model_best.pth ...")
         return filename
 
 
@@ -261,8 +242,8 @@ class Trainer():
         :param resume_path: Checkpoint path to be resumed
         """
         resume_path = str(resume_path)
-        #self.logger.info("Loading checkpoint: {} ...".format(resume_path))
-        print("Loading checkpoint: {} ...".format(resume_path))
+        self.logger.info("Loading checkpoint: {} ...".format(resume_path))
+
         checkpoint = torch.load(resume_path)
         self.start_epoch = checkpoint['epoch'] + 1
         self.monitor_best = checkpoint['monitor_best']
@@ -280,10 +261,7 @@ class Trainer():
         #else:
         #    self.optimizer.load_state_dict(checkpoint['optimizer'])
         self.optimizer.load_state_dict(checkpoint['optimizer'])
-
-        #self.logger.info("Checkpoint loaded. Resume training from epoch {}".format(self.start_epoch))
-        print("Checkpoint loaded. Resume training from epoch {}".format(self.start_epoch))
-
+        self.logger.info("Checkpoint loaded. Resume training from epoch {}".format(self.start_epoch))
 
     def _progress(self, batch_idx):
         base = '[{}/{} ({:.0f}%)]'

@@ -38,18 +38,3 @@ class Attention(nn.Module):
         linear_combination = torch.bmm(energy, values).squeeze(1)
         return linear_combination
 
-class Classifier(nn.Module):
-    def __init__(self, encoder, attention, hidden_dim, num_classes):
-        super(Classifier, self).__init__()
-        self.encoder = encoder
-        self.attention = attention
-        self.decoder = nn.Linear(hidden_dim, num_classes)
-        self.sigmoid = nn.Sigmoid()
-        
-    def forward(self, input):
-        outputs, hidden = self.encoder(input)
-        hidden = torch.cat([hidden[-1], hidden[-2]], dim=1)
-        linear_combination = self.attention(hidden, outputs, outputs) 
-        logits = self.decoder(linear_combination)
-        softmaxed = self.sigmoid(logits)
-        return logits

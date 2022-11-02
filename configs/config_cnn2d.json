@@ -9,7 +9,7 @@
     "data_loader": {
         "type": "CNN2DEmbeddingsDataloader",
         "args":{
-            "data_dir": "./wav2vec2-base/VCC2018_wav2vec_embeddings/",
+            "data_dir": "./embeddings/VCC2018_wav2vec-base_embeddings/",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",
@@ -39,7 +39,7 @@
         }
     },
     "trainer": {
-        "save_dir": "saved",
+        "save_dir": "checkpoints",
         "log_dir": "logs",
         "log_step": 25,
         "save_period": 1,

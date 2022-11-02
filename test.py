@@ -2,13 +2,11 @@ import argparse
 import collections
 import torch
 import numpy as np
-#from data_loader import data_loaders as module_data
-import data_loader as module_data
+from data_loader import embeddings_dataloader as module_data
 from trainer import loss as module_loss
 import model as module_arch
 from utils import prepare_device
 from trainer.trainer import Trainer
-from utils.logger import logger
 
 from utils.config_parser import ConfigParser
 
@@ -20,10 +18,6 @@ torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
 def main(config):
-    # prepare for (multi-device) GPU training
-    device, device_ids = prepare_device(config['n_gpu'])
-
-    logger.info("Training {} using device {}".format(config["name"], device))
     # setup data_loader instances
     data_loader = config.init_obj('data_loader', module_data)
     val_data_loader = data_loader.get_val_dataloader()
@@ -35,7 +29,8 @@ def main(config):
     #metrics = [getattr(module_metric, met) for met in config['metrics']]
     criterion = getattr(module_loss, config['loss'])
 
-
+    # prepare for (multi-device) GPU training
+    device, device_ids = prepare_device(config['n_gpu'])
     model = model.to(device)
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
@@ -45,14 +40,13 @@ def main(config):
 
     config.config['trainer']['save_dir'] = config.save_dir
 
-    #print("Training {} using device {}".format(config["name"], device))
+    print("Training {} using device {}".format(config["name"], device))
     trainer = Trainer(model, criterion, optimizer,
                       config=config.config['trainer'],
                       device=device,
                       data_loader=data_loader,
                       valid_data_loader=val_data_loader,
-                      lr_scheduler=lr_scheduler,
-                      logger=logger)
+                      lr_scheduler=lr_scheduler)
 
     trainer.train()
 
@@ -78,6 +72,4 @@ if __name__ == '__main__':
     #args = parser.parse_args()
 
     config = ConfigParser.from_args(args, options)
-    logger.config(folder=config._log_dir)
-
     main(config)
