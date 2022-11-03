@@ -60,9 +60,6 @@ class Trainer():
             if self.early_stop <= 0:
                 self.early_stop = float('inf')
 
-        #self.train_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
-        #self.valid_metrics = MetricTracker('loss', *[m.__name__ for m in self.metric_ftns], writer=self.writer)
-
     def _train_epoch(self, epoch):
         """
         Training logic for an epoch
@@ -197,7 +194,6 @@ class Trainer():
                 if not_improved_count > self.early_stop:
                     self.logger.info("Validation performance didn\'t improve for {} epochs. Training stops.".format(self.early_stop))
                     break
-
 
             if ((epoch % self.save_period) == 0):
                 checkpoint_filepath = self._save_checkpoint(epoch, save_best=best)
