@@ -58,20 +58,20 @@ def main(config):
         'pearson': 0,
         'spearman': 0
     }
+    results = np.array([])
+    targets = np.array([])
     with torch.no_grad():
         for batch_idx, (data, target) in enumerate(val_data_loader):
             data, target = data.to(device), target.to(device)
             output = model(data)
             loss = criterion(output, target)
             metrics['loss'] += loss.item()
-            metrics['pearson'] += stats.spearmanr(output.squeeze().detach().cpu().numpy(),
-                                                  target.cpu().detach().numpy(), axis=None).correlation
-            metrics['spearman'] += \
-                stats.pearsonr(output.squeeze().detach().cpu().numpy(), target.cpu().detach().numpy())[0]
+            results = np.concatenate([results, output.squeeze().detach().cpu().numpy()])
+            targets = np.concatenate([targets, target.detach().cpu().numpy()])
 
     metrics['loss'] = metrics['loss'] / len(val_data_loader)
-    metrics['pearson'] = metrics['pearson'] / len(val_data_loader)
-    metrics['spearman'] = metrics['spearman'] / len(val_data_loader)
+    metrics['pearson'] = stats.spearmanr(results, targets, axis=None).correlation
+    metrics['spearman'] = stats.pearsonr(results, targets)[0]
 
     print(metrics)
 

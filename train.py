@@ -35,7 +35,6 @@ def main(config):
     #metrics = [getattr(module_metric, met) for met in config['metrics']]
     criterion = getattr(module_loss, config['loss'])
 
-
     model = model.to(device)
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler

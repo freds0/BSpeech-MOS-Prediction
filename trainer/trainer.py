@@ -6,16 +6,6 @@ from scipy import stats
 #from utils.util import MetricTracker
 #from torchmetrics import PearsonCorrCoef, SpearmanCorrCoef
 
-def pearson_correlation_loss(output, target):
-    '''
-    Source-code: https://discuss.pytorch.org/t/use-pearson-correlation-coefficient-as-cost-function/8739/4
-    '''
-    vx = output - torch.mean(output)
-    vy = target - torch.mean(target)
-    return torch.sum(vx * vy) / (
-                torch.sqrt(torch.sum(vx ** 2)) * torch.sqrt(torch.sum(vy ** 2)))  # use Pearson correlation
-
-
 class Trainer():
     """
     Trainer class
@@ -77,6 +67,8 @@ class Trainer():
         }
 
         total_steps = len(self.data_loader)
+        results = np.array([])
+        targets = np.array([])
         for batch_idx, (data, target) in enumerate(self.data_loader):
             data, target = data.to(self.device, dtype=torch.float32), target.to(self.device, dtype=torch.float32)
             self.optimizer.zero_grad()
@@ -85,13 +77,9 @@ class Trainer():
             loss.backward()
             self.optimizer.step()
 
-            #self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
-            #self.train_metrics.update('loss', loss.item())
-            #for met in self.metric_ftns:
-            #    self.train_metrics.update(met.__name__, met(output, target))
             metrics['loss'] += loss.item()
-            metrics['pearson'] += stats.spearmanr(output.squeeze().detach().cpu().numpy(), target.cpu().detach().numpy(), axis=None).correlation
-            metrics['spearman'] += stats.pearsonr(output.squeeze().detach().cpu().numpy(), target.cpu().detach().numpy())[0]
+            results = np.concatenate([results, output.squeeze().detach().cpu().numpy()])
+            targets = np.concatenate([targets, target.detach().cpu().numpy()])
 
             if (batch_idx % self.log_step) == 0:
                 self.logger.info('Train Step: {} {} Loss: {:.6f}'.format(batch_idx, self._progress(batch_idx + 1), loss.item()))
@@ -100,8 +88,8 @@ class Trainer():
                 break
 
         metrics['loss'] = metrics['loss'] / len(self.data_loader)
-        metrics['pearson'] = metrics['pearson']  / len(self.data_loader)
-        metrics['spearman'] = metrics['spearman'] / len(self.data_loader)
+        metrics['pearson'] = stats.spearmanr(results, targets, axis=None).correlation
+        metrics['spearman'] = stats.pearsonr(results, targets)[0]
 
         #log = self.train_metrics.result()
         if self.do_validation:
@@ -125,26 +113,20 @@ class Trainer():
             'pearson': 0,
             'spearman': 0
         }
+        results = np.array([])
+        targets = np.array([])
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 loss = self.criterion(output, target)
                 metrics['loss'] += loss.item()
-                metrics['pearson'] += stats.spearmanr(output.squeeze().detach().cpu().numpy(),
-                                                      target.cpu().detach().numpy(), axis=None).correlation
-                metrics['spearman'] += \
-                stats.pearsonr(output.squeeze().detach().cpu().numpy(), target.cpu().detach().numpy())[0]
-
-                #self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
-                #self.valid_metrics.update('loss', loss.item())
-                #for met in self.metric_ftns:
-                #    self.valid_metrics.update(met.__name__, met(output, target))
-                #self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+                results = np.concatenate([results, output.squeeze().detach().cpu().numpy()])
+                targets = np.concatenate([targets, target.detach().cpu().numpy()])
 
         metrics['loss'] = metrics['loss'] / len(self.data_loader)
-        metrics['pearson'] = metrics['pearson'] / len(self.data_loader)
-        metrics['spearman'] = metrics['spearman'] / len(self.data_loader)
+        metrics['pearson'] = stats.spearmanr(results, targets, axis=None).correlation
+        metrics['spearman'] = stats.pearsonr(results, targets)[0]
 
         return metrics
 
