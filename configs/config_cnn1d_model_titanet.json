@@ -1,17 +1,15 @@
 {
-    "name": "DenseModel_with_VCC2018_ge2e",
+    "name": "cnn1d_model_with_VCC2018_titanet",
     "n_gpu": 1,
 
     "arch": {
-        "type": "dense_model",
-        "args": {
-            "input_dim": 256
-        }
+        "type": "conv1d_model",
+        "args": {}
     },
     "data_loader": {
         "type": "nemo_embeddings_dataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_ge2e_embeddings/",
+            "data_dir": "./embeddings/VCC2018_titanet_embeddings/",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",
@@ -44,7 +42,7 @@
         "n_checkpoints": 2,
         "log_dir": "logs",
         "log_step": 25,
-        "save_period": 10,
+        "save_period": 1,
         "verbosity": 2,
         "monitor": "min val_loss",
         "early_stop": 100,

@@ -9,7 +9,7 @@
         }
     },
     "data_loader": {
-        "type": "Wav2vecEmbeddingsDataloader",
+        "type": "wav2vec_embeddings_dataloader",
         "args":{
             "data_dir": "./embeddings/VCC2018_embeddings_wav2vec2-xls-r-300m/",
             "metadata_file": "train.csv",

@@ -84,8 +84,8 @@ class Trainer():
             if (batch_idx % self.log_step) == 0:
                 self.logger.info('Train Step: {} {} Loss: {:.6f}'.format(batch_idx, self._progress(batch_idx + 1), loss.item()))
 
-            if batch_idx == self.len_epoch:
-                break
+            #if batch_idx == self.len_epoch:
+            #    break
 
         metrics['loss'] = metrics['loss'] / len(self.data_loader)
         metrics['pearson'] = stats.spearmanr(results, targets, axis=None).correlation

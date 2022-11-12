@@ -9,7 +9,7 @@
         }
     },
     "data_loader": {
-        "type": "TitanetEmbeddingsDataloader",
+        "type": "nemo_embeddings_dataloader",
         "args":{
             "data_dir": "./embeddings/VCC2018_titanet_embeddings/",
             "metadata_file": "train.csv",
@@ -17,7 +17,7 @@
             "emb_dir": "data",
             "train_batch_size": 15000,
             "val_batch_size": 15000,
-            "shuffle": false
+            "shuffle": true
         }
     },
     "optimizer": {

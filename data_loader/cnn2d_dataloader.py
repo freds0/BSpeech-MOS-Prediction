@@ -5,7 +5,7 @@ from utils.logger import logger
 from os.path import join
 import pandas as pd
 
-class CNN2DEmbeddingsDataset(Dataset):
+class cnn2d_embedding_dataset(Dataset):
     def __init__(self, filepaths: list, scores: list):
         self.filepaths = filepaths
         self.scores = scores
@@ -21,13 +21,14 @@ class CNN2DEmbeddingsDataset(Dataset):
 
 
 def cnn2d_embedding_collate_fn(data):
-    features = [d[0] for d in data]
+    #features = [d[0] for d in data]
+    features = [torch.transpose(d[0], 1, 2) for d in data]
     scores = torch.tensor([d[1] for d in data])
     new_features = pad_sequence([f.permute(*torch.arange(f.ndim - 1, -1, -1)) for f in features], batch_first=True).squeeze().unsqueeze(1)
     return new_features, scores
 
 
-class CNN2DEmbeddingsDataloader(DataLoader):
+class cnn2d_embeddings_dataloader(DataLoader):
     def __init__(self, data_dir, metadata_file, val_metadata_file, emb_dir, train_batch_size, val_batch_size, shuffle=False, validation_split=0.1, training=True):
         self.train_batch_size = train_batch_size
         self.val_batch_size = val_batch_size
@@ -45,12 +46,11 @@ class CNN2DEmbeddingsDataloader(DataLoader):
 
         logger.info("Dataset {} training files loaded".format(len(train_filepaths)))
 
-        self.dataset = CNN2DEmbeddingsDataset(train_filepaths, train_scores)
+        self.dataset = cnn2d_embedding_dataset(train_filepaths, train_scores)
         super().__init__(dataset=self.dataset, batch_size=self.train_batch_size, shuffle=False, num_workers=0, collate_fn=cnn2d_embedding_collate_fn)
 
 
     def get_val_dataloader(self):
-
         val_data = pd.read_csv(self.val_metadata)
         val_data['score'] = val_data['score'] / val_data['score'].max()
         val_scores = val_data['score'].to_list()
@@ -58,5 +58,5 @@ class CNN2DEmbeddingsDataloader(DataLoader):
         val_filepaths = val_data['filepath'].to_list()
 
         logger.info("Dataset {} validating files loaded".format(len(val_filepaths)))
-        self.val_dataset = CNN2DEmbeddingsDataset(val_filepaths, val_scores)
+        self.val_dataset = cnn2d_embedding_dataset(val_filepaths, val_scores)
         return DataLoader(dataset=self.val_dataset, batch_size=self.val_batch_size, shuffle=False, num_workers=0, collate_fn=cnn2d_embedding_collate_fn)

@@ -40,7 +40,7 @@ def Wav2vecembedding_collate_fn(data):
     return features, scores
 
 
-class Wav2vecEmbeddingsDataloader(DataLoader):
+class wav2vec_embeddings_dataloader(DataLoader):
     def __init__(self, data_dir, metadata_file, val_metadata_file, emb_dir, train_batch_size, val_batch_size, shuffle=False):
         self.train_batch_size = train_batch_size
         self.val_batch_size = val_batch_size

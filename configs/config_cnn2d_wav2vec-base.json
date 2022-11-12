@@ -7,7 +7,7 @@
         "args": {}
     },
     "data_loader": {
-        "type": "CNN2DEmbeddingsDataloader",
+        "type": "cnn2d_embeddings_dataloader",
         "args":{
             "data_dir": "./embeddings/VCC2018_wav2vec-base_embeddings/",
             "metadata_file": "train.csv",

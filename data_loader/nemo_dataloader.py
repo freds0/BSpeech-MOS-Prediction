@@ -4,7 +4,7 @@ from utils.logger import logger
 from os.path import join
 import pandas as pd
 
-class TitanetEmbeddingsDataset(Dataset):
+class nemo_embeddings_dataset(Dataset):
     def __init__(self, filepaths: list, scores: list):
         self.filepaths = filepaths
         self.scores = scores
@@ -19,7 +19,7 @@ class TitanetEmbeddingsDataset(Dataset):
         return embedding, score
 
 
-class TitanetEmbeddingsDataloader(DataLoader):
+class nemo_embeddings_dataloader(DataLoader):
     def __init__(self, data_dir, metadata_file, val_metadata_file, emb_dir, train_batch_size, val_batch_size, shuffle=False):
         self.train_batch_size = train_batch_size
         self.val_batch_size = val_batch_size
@@ -36,7 +36,7 @@ class TitanetEmbeddingsDataloader(DataLoader):
 
         logger.info("Dataset {} training files loaded".format(len(train_filepaths)))
 
-        self.dataset = TitanetEmbeddingsDataset(train_filepaths, train_scores)
+        self.dataset = nemo_embeddings_dataset(train_filepaths, train_scores)
         super().__init__(dataset=self.dataset, batch_size=self.train_batch_size, shuffle=False, num_workers=0)
 
     def get_val_dataloader(self):
@@ -49,6 +49,6 @@ class TitanetEmbeddingsDataloader(DataLoader):
 
         logger.info("Dataset {} validating files loaded".format(len(val_filepaths)))
 
-        self.val_dataset = TitanetEmbeddingsDataset(val_filepaths, val_scores)
+        self.val_dataset = nemo_embeddings_dataset(val_filepaths, val_scores)
         return DataLoader(dataset=self.val_dataset, batch_size=self.val_batch_size, shuffle=False, num_workers=0)
 

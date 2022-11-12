@@ -6,7 +6,7 @@ import pandas as pd
 import random
 from utils.logger import logger
 
-class EmbeddingsDataset(Dataset):
+class embeddings_dataset(Dataset):
     def __init__(self, filepaths: list, scores: list):
         self.filepaths = filepaths
         self.scores = scores
@@ -38,7 +38,7 @@ def embedding_collate_fn(data):
         'score': scores
     }
 
-class EmbeddingsDataloader(DataLoader):
+class embeddings_dataloader(DataLoader):
     def __init__(self, data_dir, metadata_file, val_metadata_file, emb_dir, train_batch_size, val_batch_size, shuffle=False, validation_split=0.1, training=True):
         self.train_batch_size = train_batch_size
         self.val_batch_size = val_batch_size
@@ -53,21 +53,8 @@ class EmbeddingsDataloader(DataLoader):
         train_scores = train_data['score'].to_list()
         train_data['filepath'] = str(self.data_dir + "/" + self.emb_dir + "/") + train_data['filepath'] + ".pt"
         train_filepaths = train_data['filepath'].to_list()
-
-        #random.seed(self.seed)
-
-        #train_filepaths = train_filepaths[:int((len(train_filepaths) + 1) * validation_split)]
-        #train_scores = train_scores[:int((len(train_scores) + 1) * validation_split)]
-
         logger.info("Dataset {} training files loaded".format(len(train_filepaths)))
-        #random.seed(self.seed)
-        #test_filepaths = filepaths[int((len(filepaths) + 1) * validation_split):]
-        #test_scores = filepaths[:int((len(scores) + 1) * validation_split)]
-
-        #self.train_dataset = EmbeddingsDataset(train_filepaths, train_scores)
-        #self.test_dataset = EmbeddingsDataset(test_filepaths, test_scores)
-
-        self.dataset = EmbeddingsDataset(train_filepaths, train_scores)
+        self.dataset = embeddings_dataset(train_filepaths, train_scores)
         super().__init__(dataset=self.dataset, batch_size=self.train_batch_size, shuffle=False, num_workers=0)
 
 
@@ -80,5 +67,5 @@ class EmbeddingsDataloader(DataLoader):
         val_filepaths = val_data['filepath'].to_list()
 
         logger.info("Dataset {} validating files loaded".format(len(val_filepaths)))
-        self.val_dataset = EmbeddingsDataset(val_filepaths, val_scores)
+        self.val_dataset = embeddings_dataset(val_filepaths, val_scores)
         return DataLoader(dataset=self.val_dataset, batch_size=self.val_batch_size, shuffle=False, num_workers=0)
