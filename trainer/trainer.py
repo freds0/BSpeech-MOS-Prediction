@@ -2,7 +2,7 @@ import os
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
-from scipy import stats
+
 #from utils.util import MetricTracker
 #from torchmetrics import PearsonCorrCoef, SpearmanCorrCoef
 
@@ -10,10 +10,11 @@ class Trainer():
     """
     Trainer class
     """
-    def __init__(self, model, criterion, optimizer, config, device,
+    def __init__(self, model, criterion, metric_functions, optimizer, config, device,
                  data_loader, valid_data_loader=None, lr_scheduler=None, logger=None):
         self.model = model
         self.criterion = criterion
+        self.metric_fnc = metric_functions
         self.optimizer = optimizer
         self.config = config
         self.device = device
@@ -32,7 +33,6 @@ class Trainer():
         self.log_step = config['log_step']
         # setup visualization writer instance
         self.writer = SummaryWriter(log_dir=os.path.join(self.checkpoint_dir, config['log_dir']))
-
         self.monitor = config.get('monitor', 'off')
 
         # configuration to monitor model performance and save best
@@ -40,8 +40,7 @@ class Trainer():
             self.monitor_mode = 'off'
             self.monitor_best = 0
         else:
-            #self.monitor_mode, self.monitor_metric = self.monitor.split()
-            self.monitor_mode, self.monitor_metric = 'min', 'loss'
+            self.monitor_mode, self.monitor_metric = self.monitor.split('|')
             assert self.monitor_mode in ['min', 'max']
 
             self.monitor_best = float('inf') if self.monitor_mode == 'min' else float('-inf')
@@ -60,15 +59,15 @@ class Trainer():
         #self.train_metrics.reset()
         epoch_loss = 0
 
-        metrics = {
-            'loss': 0,
-            'pearson': 0,
-            'spearman': 0
-        }
+        metrics_names = [m.__name__ for m in self.metric_fnc]
+        train_metrics = dict.fromkeys(metrics_names, 0)
+        train_metrics['loss'] = 0
 
         total_steps = len(self.data_loader)
+
         results = np.array([])
         targets = np.array([])
+
         for batch_idx, (data, target) in enumerate(self.data_loader):
             data, target = data.to(self.device, dtype=torch.float32), target.to(self.device, dtype=torch.float32)
             self.optimizer.zero_grad()
@@ -77,7 +76,7 @@ class Trainer():
             loss.backward()
             self.optimizer.step()
 
-            metrics['loss'] += loss.item()
+            train_metrics['loss'] += loss.item()
             results = np.concatenate([results, output.squeeze().detach().cpu().numpy()])
             targets = np.concatenate([targets, target.detach().cpu().numpy()])
 
@@ -87,9 +86,9 @@ class Trainer():
             #if batch_idx == self.len_epoch:
             #    break
 
-        metrics['loss'] = metrics['loss'] / len(self.data_loader)
-        metrics['pearson'] = stats.spearmanr(results, targets, axis=None).correlation
-        metrics['spearman'] = stats.pearsonr(results, targets)[0]
+        train_metrics['loss'] = train_metrics['loss'] / len(self.data_loader)
+        for m in self.metric_fnc:
+            train_metrics[m.__name__] = m(results, targets)[0]
 
         #log = self.train_metrics.result()
         if self.do_validation:
@@ -98,7 +97,7 @@ class Trainer():
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
-        return metrics, val_metrics
+        return train_metrics, val_metrics
 
 
     def _valid_epoch(self, epoch):
@@ -108,11 +107,11 @@ class Trainer():
         :return: A log that contains information about validation
         """
         self.model.eval()
-        metrics = {
-            'loss': 0,
-            'pearson': 0,
-            'spearman': 0
-        }
+
+        metrics_names = [m.__name__ for m in self.metric_fnc]
+        val_metrics = dict.fromkeys(metrics_names, 0)
+        val_metrics['loss'] = 0
+
         results = np.array([])
         targets = np.array([])
         with torch.no_grad():
@@ -120,15 +119,15 @@ class Trainer():
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 loss = self.criterion(output, target)
-                metrics['loss'] += loss.item()
+                val_metrics['loss'] += loss.item()
                 results = np.concatenate([results, output.squeeze().detach().cpu().numpy()])
                 targets = np.concatenate([targets, target.detach().cpu().numpy()])
 
-        metrics['loss'] = metrics['loss'] / len(self.data_loader)
-        metrics['pearson'] = stats.spearmanr(results, targets, axis=None).correlation
-        metrics['spearman'] = stats.pearsonr(results, targets)[0]
+        val_metrics['loss'] = val_metrics['loss'] / len(self.data_loader)
+        for m in self.metric_fnc:
+            val_metrics[m.__name__] = m(results, targets)[0]
 
-        return metrics
+        return val_metrics
 
 
     def train(self):
@@ -139,35 +138,35 @@ class Trainer():
         saved_checkpoints = []
         for epoch in range(self.start_epoch, self.epochs + 1):
             self.logger.info('Epoch: {}/{}'.format(epoch, self.epochs))
-            metrics, val_metrics = self._train_epoch(epoch)
+            train_metrics, val_metrics = self._train_epoch(epoch)
 
-            self.logger.info("\tTrain Loss: {:.6f} Pearson Corr: {:.4f} Spearman Corr: {:.4f}".format(metrics['loss'], metrics['pearson'], metrics['spearman']))
-            self.logger.info("\tVal   Loss: {:.6f} Pearson Corr: {:.4f} Spearman Corr: {:.4f}".format(val_metrics['loss'], val_metrics['pearson'], val_metrics['spearman']))
+            self.logger.info("\tTrain Loss: {:.6f} Pearson Corr: {:.4f} Spearman Corr: {:.4f}".format(train_metrics['loss'], train_metrics['pearson_corr'], train_metrics['spearman_corr']))
+            self.logger.info("\tVal   Loss: {:.6f} Pearson Corr: {:.4f} Spearman Corr: {:.4f}".format(val_metrics['loss'], val_metrics['pearson_corr'], val_metrics['spearman_corr']))
 
             # save tensorboard informations
-            self.writer.add_scalar("Loss/train", metrics['loss'], epoch)
-            self.writer.add_scalar("Pearson Correlation/train", metrics['pearson'], epoch)
-            self.writer.add_scalar("Spearman Correlation/train", metrics['spearman'], epoch)
+            self.writer.add_scalar("Loss/train", train_metrics['loss'], epoch)
+            self.writer.add_scalar("Pearson Correlation/train", train_metrics['pearson_corr'], epoch)
+            self.writer.add_scalar("Spearman Correlation/train", train_metrics['spearman_corr'], epoch)
             self.writer.add_scalar("Learning Rate", self.lr_scheduler.get_last_lr()[0], epoch)
 
             self.writer.add_scalar("Loss/val", val_metrics['loss'], epoch)
-            self.writer.add_scalar("Pearson Correlation/val", val_metrics['pearson'], epoch)
-            self.writer.add_scalar("Spearman Correlation/val", val_metrics['spearman'], epoch)
+            self.writer.add_scalar("Pearson Correlation/val", val_metrics['pearson_corr'], epoch)
+            self.writer.add_scalar("Spearman Correlation/val", val_metrics['spearman_corr'], epoch)
 
             # evaluate model performance according to configured metric, save best checkpoint as model_best
             best = False
             if self.monitor_mode != 'off':
                 try:
                     # check whether model performance improved or not, according to specified metric(mnt_metric)
-                    improved = (self.monitor_mode == 'min' and metrics[self.monitor_metric] <= self.monitor_best) or \
-                               (self.monitor_mode == 'max' and metrics[self.monitor_metric] >= self.monitor_best)
+                    improved = (self.monitor_mode == 'min' and val_metrics[self.monitor_metric] <= self.monitor_best) or \
+                               (self.monitor_mode == 'max' and val_metrics[self.monitor_metric] >= self.monitor_best)
                 except KeyError:
                     self.logger.error("Warning: Metric '{}' is not found. Model performance monitoring is disabled.".format(self.monitor_metric), type='ERROR')
                     self.monitor_mode = 'off'
                     improved = False
 
                 if improved:
-                    self.monitor_best = metrics[self.monitor_metric]
+                    self.monitor_best = val_metrics[self.monitor_metric]
                     not_improved_count = 0
                     best = True
                 else:
@@ -175,6 +174,7 @@ class Trainer():
 
                 if not_improved_count > self.early_stop:
                     self.logger.info("Validation performance didn\'t improve for {} epochs. Training stops.".format(self.early_stop))
+                    self.logger.info("Best Metric = {}".format(self.monitor_best))
                     break
 
             if ((epoch % self.save_period) == 0):

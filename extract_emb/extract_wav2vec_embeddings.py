@@ -8,9 +8,25 @@ from glob import glob
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def load_model(model_name="facebook/wav2vec2-xls-r-300m"):
-    #model = Wav2Vec2Model.from_pretrained("facebook/wav2vec2-xls-r-300m") "facebook/wav2vec2-base-960h"
-    model = Wav2Vec2Model.from_pretrained("facebook/wav2vec2-large-xlsr-53")
+def load_model(model_name="wav2vec2-xls-r-300m"):
+    model_path = None
+    if (model_name == "wav2vec2-xls-r-300m"):
+        model_path = "facebook/wav2vec2-xls-r-300m"
+    elif (model_name == "wav2vec2-xls-r-1b"):
+        model_path = "facebook/wav2vec2-xls-r-1b" # NOT TESTED!
+    elif (model_name == "wav2vec2-xls-r-2b"):
+        model_path = "facebook/wav2vec2-xls-r-2b"  # NOT TESTED!
+    elif (model_name == "wav2vec2-base-100h"):
+        model_path = "facebook/wav2vec2-base-100h" # NOT TESTED!
+    elif (model_name == "wav2vec2-base-960h"):
+        model_path = "facebook/wav2vec2-base-960h"
+    elif (model_name == "wav2vec2-large-xlsr-53"):
+        model_path = "facebook/wav2vec2-large-xlsr-53"
+    elif (model_name == "wav2vec2-large"):
+        model_path = "facebook/wav2vec2-large" # NOT TESTED!
+    elif (model_name == "wav2vec2-large-robust"):
+        model_path = "facebook/wav2vec2-large-robust" # NOT TESTED!
+    Wav2Vec2Model.from_pretrained(model_path)
     model = model.to(device)
     model.eval()
     feature_extractor = Wav2Vec2FeatureExtractor(feature_size=1, sampling_rate=16000, padding_value=0.0, do_normalize=True, return_attention_mask=True)
@@ -46,8 +62,8 @@ def main():
     parser.add_argument('-i', '--input_dir', help='Wavs folder')
     parser.add_argument('-c', '--input_csv', help='Metadata filepath')
     parser.add_argument('-o', '--output_dir', default='output_embeddings', help='Name of csv file')
-    parser.add_argument('-m', '--model', default="facebook/wav2vec2-base-960h",
-                        help="Wav2Vec version: - facebook/wav2vec2-base-960h\n - facebook/wav2vec2-large-xlsr-53\n - facebook/wav2vec2-xls-r-300m")
+    parser.add_argument('-m', '--model_name', default="wav2vec2-base-960h",
+                        help="Available models: - wav2vec2-base-960h | wav2vec2-base-100h | wav2vec2-large | wav2vec2-large-robust | wav2vec2-large-xlsr-53 | wav2vec2-xls-r-300m | wav2vec2-xls-r-1b | wav2vec2-xls-r-1b")
     args = parser.parse_args()
 
     output_dir = join(args.base_dir, args.output_dir)
@@ -65,7 +81,7 @@ def main():
         print("Error: args input_dir or input_csv are necessary!")
         exit()
     makedirs(output_dir, exist_ok=True)
-    extract_wav2vec_embeddings(filelist, output_dir, args.model)
+    extract_wav2vec_embeddings(filelist, output_dir, args.model_name)
 
 
 if __name__ == "__main__":

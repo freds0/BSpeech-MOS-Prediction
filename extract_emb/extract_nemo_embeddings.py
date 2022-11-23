@@ -21,8 +21,8 @@ def load_model(model_name="speakernet"):
     return speaker_model
 
 
-def extract_nemo_embeddings(filelist, output_dir):
-    model = load_model()
+def extract_nemo_embeddings(filelist, output_dir, model_name):
+    model = load_model(model_name)
     for filepath in tqdm(filelist):
         # Load audio file
         if not exists(filepath):
@@ -43,6 +43,7 @@ def main():
     parser.add_argument('-i', '--input_dir', help='Wavs folder')
     parser.add_argument('-c', '--input_csv', help='Metadata filepath')
     parser.add_argument('-o', '--output_dir', default='output_embeddings', help='Name of csv file')
+    parser.add_argument('-m', '--model_name', help='Available Models: speakernet and titanet.')
     args = parser.parse_args()
 
     output_dir = join(args.base_dir, args.output_dir)
@@ -60,7 +61,7 @@ def main():
         print("Error: args input_dir or input_csv are necessary!")
         exit()
     makedirs(output_dir, exist_ok=True)
-    extract_nemo_embeddings(filelist, output_dir)
+    extract_nemo_embeddings(filelist, output_dir, args.model_name)
 
 
 if __name__ == "__main__":

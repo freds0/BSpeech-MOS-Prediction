@@ -2,9 +2,9 @@ import argparse
 import collections
 import torch
 import numpy as np
-#from data_loader import data_loaders as module_data
 import data_loader as module_data
 from trainer import loss as module_loss
+from trainer import metric as module_metric
 import model as module_arch
 from utils import prepare_device
 from trainer.trainer import Trainer
@@ -30,12 +30,11 @@ def main(config):
 
     # build model architecture, then print to console
     model = config.init_obj('arch', module_arch)
+    model = model.to(device)
 
     # get function handles of loss and metrics
-    #metrics = [getattr(module_metric, met) for met in config['metrics']]
+    metrics = [getattr(module_metric, met) for met in config['metrics']]
     criterion = getattr(module_loss, config['loss'])
-
-    model = model.to(device)
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
@@ -45,14 +44,14 @@ def main(config):
     config.config['trainer']['save_dir'] = config.save_dir
 
     #print("Training {} using device {}".format(config["name"], device))
-    trainer = Trainer(model, criterion, optimizer,
+    trainer = Trainer(model, criterion, metrics, optimizer,
                       config=config.config['trainer'],
                       device=device,
                       data_loader=data_loader,
                       valid_data_loader=val_data_loader,
                       lr_scheduler=lr_scheduler,
-                      logger=logger)
-
+                      logger=logger
+               )
     trainer.train()
 
 
@@ -77,6 +76,6 @@ if __name__ == '__main__':
     #args = parser.parse_args()
 
     config = ConfigParser.from_args(args, options)
-    logger.config(folder=config._log_dir)
+    logger.config(folder=config._save_dir)
 
     main(config)

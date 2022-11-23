@@ -8,15 +8,24 @@ from glob import glob
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-def load_model():
-    processor = Wav2Vec2Processor.from_pretrained("facebook/hubert-large-ls960-ft")
-    model = HubertModel.from_pretrained("facebook/hubert-large-ls960-ft")
+def load_model(model_name="hubert-large-ls960-ft"):
+    model_path = None
+    if (model_name == "hubert-large-ls960-ft"):
+        model_path = "facebook/hubert-large-ls960-ft"
+    elif (model_name == "hubert-large-ll60k"):  # NOT TESTED!
+        model_path = "facebook/hubert-large-ll60k"
+    elif (model_name == "hubert-xlarge-ll60k"): # NOT TESTED!
+        model_path = "facebook/hubert-xlarge-ll60k"
+    elif (model_name == "hubert-xlarge-ls960-ft"): # NOT TESTED!
+        model_path = "facebook/hubert-xlarge-ls960-ft" # Finetuned version
+    processor = Wav2Vec2Processor.from_pretrained(model_path)
+    model = HubertModel.from_pretrained(model_path)
     model.eval()
     return model, processor
 
 
-def extract_hubert_embeddings(filelist, output_dir):
-    model, processor = load_model()
+def extract_hubert_embeddings(filelist, output_dir, model_name):
+    model, processor = load_model(model_name)
     for filepath in tqdm(filelist):
         # Load audio file
         if not exists(filepath):
@@ -43,6 +52,7 @@ def main():
     parser.add_argument('-i', '--input_dir', help='Wavs folder')
     parser.add_argument('-c', '--input_csv', help='Metadata filepath')
     parser.add_argument('-o', '--output_dir', default='output_embeddings', help='Name of csv file')
+    parser.add_argument('-m', '--model_name', default="hubert-large-ls960-ft", help='Available Models: hubert-large-ls960-ft | hubert-large-ll60k | hubert-xlarge-ll60k | hubert-xlarge-ls960-ft.')
     args = parser.parse_args()
 
     output_dir = join(args.base_dir, args.output_dir)
@@ -60,7 +70,7 @@ def main():
         print("Error: args input_dir or input_csv are necessary!")
         exit()
     makedirs(output_dir, exist_ok=True)
-    extract_hubert_embeddings(filelist, output_dir)
+    extract_hubert_embeddings(filelist, output_dir, args.model_name)
 
 
 if __name__ == "__main__":
