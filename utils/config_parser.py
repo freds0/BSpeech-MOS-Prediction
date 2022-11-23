@@ -9,7 +9,7 @@ from utils.util import read_json, write_json
 
 
 class ConfigParser:
-    def __init__(self, config, resume=None, modification=None, run_id=None):
+    def __init__(self, config, resume=None, modification=None, run_id=None, log_to_file=True):
         """
         class to parse configuration json file. Handles hyperparameters for training, initializations of modules, checkpoint saving
         and logging module.
@@ -32,15 +32,17 @@ class ConfigParser:
         self._log_dir = self.save_dir / 'logs'
 
         # make directory for saving checkpoints and log.
-        exist_ok = run_id == ''
-        self.save_dir.mkdir(parents=True, exist_ok=exist_ok)
-        self.log_dir.mkdir(parents=True, exist_ok=exist_ok)
+        if log_to_file:
+            exist_ok = run_id == ''
+            self.save_dir.mkdir(parents=True, exist_ok=exist_ok)
+            self.log_dir.mkdir(parents=True, exist_ok=exist_ok)
 
         # save updated config file to the checkpoint dir
-        write_json(self.config, self.save_dir / 'config.json')
+        if log_to_file:
+            write_json(self.config, self.save_dir / 'config.json')
 
     @classmethod
-    def from_args(cls, args, options=''):
+    def from_args(cls, args, options='', log_to_file=True):
         """
         Initialize this class from some cli arguments. Used in train, test.
         """
@@ -67,7 +69,7 @@ class ConfigParser:
 
         # parse custom cli options into dictionary
         modification = {opt.target : getattr(args, _get_opt_name(opt.flags)) for opt in options}
-        return cls(config, resume, modification)
+        return cls(config=config, resume=resume, modification=modification, log_to_file=log_to_file)
 
     def init_obj(self, name, module, *args, **kwargs):
         """

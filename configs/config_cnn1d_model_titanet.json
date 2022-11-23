@@ -13,8 +13,8 @@
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",
-            "train_batch_size": 15000,
-            "val_batch_size": 15000,
+            "train_batch_size": 128,
+            "val_batch_size": 128,
             "shuffle": true
         }
     },
@@ -28,7 +28,7 @@
     },
     "loss": "mse_loss",
     "metrics": [
-        "accuracy", "top_k_acc"
+        "spearman_corr", "pearson_corr"
     ],
     "lr_scheduler": {
         "type": "StepLR",
@@ -44,7 +44,7 @@
         "log_step": 25,
         "save_period": 1,
         "verbosity": 2,
-        "monitor": "min val_loss",
+        "monitor": "max|spearman_corr",
         "early_stop": 100,
         "epochs": 500,
         "tensorboard": true

@@ -2,19 +2,19 @@ import os
 import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
+from utils.metric_handler import MetricHandler
 
-#from utils.util import MetricTracker
 #from torchmetrics import PearsonCorrCoef, SpearmanCorrCoef
 
 class Trainer():
     """
     Trainer class
     """
-    def __init__(self, model, criterion, metric_functions, optimizer, config, device,
+    def __init__(self, model, criterion, metrics_names, optimizer, config, device,
                  data_loader, valid_data_loader=None, lr_scheduler=None, logger=None):
         self.model = model
         self.criterion = criterion
-        self.metric_fnc = metric_functions
+        self.metrics_handler = MetricHandler(metrics_names)
         self.optimizer = optimizer
         self.config = config
         self.device = device
@@ -53,21 +53,16 @@ class Trainer():
         """
         Training logic for an epoch
         :param epoch: Integer, current training epoch.
-        :return: A log that contains average loss and metric in this epoch.
+        :return: A dict with train and val metrics
         """
         self.model.train()
         #self.train_metrics.reset()
-        epoch_loss = 0
-
-        metrics_names = [m.__name__ for m in self.metric_fnc]
-        train_metrics = dict.fromkeys(metrics_names, 0)
-        train_metrics['loss'] = 0
 
         total_steps = len(self.data_loader)
 
-        results = np.array([])
+        outputs = np.array([])
         targets = np.array([])
-
+        total_loss = 0
         for batch_idx, (data, target) in enumerate(self.data_loader):
             data, target = data.to(self.device, dtype=torch.float32), target.to(self.device, dtype=torch.float32)
             self.optimizer.zero_grad()
@@ -75,25 +70,19 @@ class Trainer():
             loss = self.criterion(output, target)
             loss.backward()
             self.optimizer.step()
-
-            train_metrics['loss'] += loss.item()
-            results = np.concatenate([results, output.squeeze().detach().cpu().numpy()])
+            total_loss += loss.item()
+            outputs = np.concatenate([outputs, output.squeeze().detach().cpu().numpy()])
             targets = np.concatenate([targets, target.detach().cpu().numpy()])
 
             if (batch_idx % self.log_step) == 0:
                 self.logger.info('Train Step: {} {} Loss: {:.6f}'.format(batch_idx, self._progress(batch_idx + 1), loss.item()))
 
-            #if batch_idx == self.len_epoch:
-            #    break
+        self.metrics_handler.add("loss", total_loss / len(self.data_loader))
+        self.metrics_handler.update(outputs, targets)
+        train_metrics = self.metrics_handler.get_data()
 
-        train_metrics['loss'] = train_metrics['loss'] / len(self.data_loader)
-        for m in self.metric_fnc:
-            train_metrics[m.__name__] = m(results, targets)[0]
-
-        #log = self.train_metrics.result()
         if self.do_validation:
             val_metrics = self._valid_epoch(epoch)
-            #log.update(**{'val_'+k : v for k, v in val_log.items()})
 
         if self.lr_scheduler is not None:
             self.lr_scheduler.step()
@@ -104,30 +93,25 @@ class Trainer():
         """
         Validate after training an epoch
         :param epoch: Integer, current training epoch.
-        :return: A log that contains information about validation
+        :return: A dict validation metrics
         """
         self.model.eval()
-
-        metrics_names = [m.__name__ for m in self.metric_fnc]
-        val_metrics = dict.fromkeys(metrics_names, 0)
-        val_metrics['loss'] = 0
-
-        results = np.array([])
+        self.metrics_handler.reset()
+        outputs = np.array([])
         targets = np.array([])
+        total_loss = 0
         with torch.no_grad():
             for batch_idx, (data, target) in enumerate(self.valid_data_loader):
                 data, target = data.to(self.device), target.to(self.device)
                 output = self.model(data)
                 loss = self.criterion(output, target)
-                val_metrics['loss'] += loss.item()
-                results = np.concatenate([results, output.squeeze().detach().cpu().numpy()])
+                total_loss += loss.item()
+                outputs = np.concatenate([outputs, output.squeeze().detach().cpu().numpy()])
                 targets = np.concatenate([targets, target.detach().cpu().numpy()])
 
-        val_metrics['loss'] = val_metrics['loss'] / len(self.data_loader)
-        for m in self.metric_fnc:
-            val_metrics[m.__name__] = m(results, targets)[0]
-
-        return val_metrics
+        self.metrics_handler.add('loss', total_loss / len(self.data_loader))
+        self.metrics_handler.update(outputs, targets)
+        return self.metrics_handler.get_data()
 
 
     def train(self):

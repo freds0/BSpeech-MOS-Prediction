@@ -3,9 +3,10 @@ from os.path import join
 
 class logger():
     @staticmethod
-    def config(folder):
-        filepath = join(folder, 'training.log')
-        logging.basicConfig(filename=filepath, level=logging.INFO)
+    def config(folder=None):
+        if not (folder is None):
+            filepath = join(folder, 'training.log')
+            logging.basicConfig(filename=filepath, level=logging.INFO)
 
     @staticmethod
     def info(message):

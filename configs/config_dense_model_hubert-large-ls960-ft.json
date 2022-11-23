@@ -1,5 +1,5 @@
 {
-    "name": "DenseModel_with_VCC2018_wav2vec2-xls-r-300m",
+    "name": "DenseModel_with_VCC2018_hubert-large-ls960-ft",
     "n_gpu": 1,
 
     "arch": {
@@ -11,7 +11,7 @@
     "data_loader": {
         "type": "wav2vec_embeddings_dataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_embeddings_wav2vec2-xls-r-300m/",
+            "data_dir": "./embeddings/VCC2018_embeddings_hubert-large-ls960-ft/",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",
@@ -52,3 +52,4 @@
         "tensorboard": true
     }
 }
+

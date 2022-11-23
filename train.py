@@ -6,10 +6,9 @@ import data_loader as module_data
 from trainer import loss as module_loss
 from trainer import metric as module_metric
 import model as module_arch
-from utils import prepare_device
+from utils import prepare_device, resume_checkpoint
 from trainer.trainer import Trainer
 from utils.logger import logger
-
 from utils.config_parser import ConfigParser
 
 # fix random seeds for reproducibility
@@ -21,7 +20,7 @@ np.random.seed(SEED)
 
 def main(config):
     # prepare for (multi-device) GPU training
-    device, device_ids = prepare_device(config['n_gpu'])
+    device, device_ids = prepare_device(config['n_gpu'], logger)
 
     logger.info("Training {} using device {}".format(config["name"], device))
     # setup data_loader instances
@@ -30,10 +29,12 @@ def main(config):
 
     # build model architecture, then print to console
     model = config.init_obj('arch', module_arch)
+    if (config.resume):
+        resume_checkpoint(model, config.resume, logger)
     model = model.to(device)
 
     # get function handles of loss and metrics
-    metrics = [getattr(module_metric, met) for met in config['metrics']]
+    metrics = config['metrics']
     criterion = getattr(module_loss, config['loss'])
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
@@ -43,7 +44,7 @@ def main(config):
 
     config.config['trainer']['save_dir'] = config.save_dir
 
-    #print("Training {} using device {}".format(config["name"], device))
+    logger.info("Training {} using device {}".format(config["name"], device))
     trainer = Trainer(model, criterion, metrics, optimizer,
                       config=config.config['trainer'],
                       device=device,
@@ -71,9 +72,6 @@ if __name__ == '__main__':
         CustomArgs(['--lr', '--learning_rate'], type=float, target='optimizer;args;lr'),
         CustomArgs(['--bs', '--batch_size'], type=int, target='data_loader;args;batch_size')
     ]
-
-    #config = ConfigParser.from_args(args, options)
-    #args = parser.parse_args()
 
     config = ConfigParser.from_args(args, options)
     logger.config(folder=config._save_dir)
