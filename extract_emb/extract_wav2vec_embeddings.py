@@ -26,7 +26,7 @@ def load_model(model_name="wav2vec2-xls-r-300m"):
         model_path = "facebook/wav2vec2-large" # NOT TESTED!
     elif (model_name == "wav2vec2-large-robust"):
         model_path = "facebook/wav2vec2-large-robust" # NOT TESTED!
-    Wav2Vec2Model.from_pretrained(model_path)
+    model = Wav2Vec2Model.from_pretrained(model_path)
     model = model.to(device)
     model.eval()
     feature_extractor = Wav2Vec2FeatureExtractor(feature_size=1, sampling_rate=16000, padding_value=0.0, do_normalize=True, return_attention_mask=True)
