@@ -42,17 +42,3 @@ def prepare_device(n_gpu_use, logger):
     device = torch.device('cuda:0' if n_gpu_use > 0 else 'cpu')
     list_ids = list(range(n_gpu_use))
     return device, list_ids
-
-def resume_checkpoint(model, resume_path, logger):
-    """
-    Resume from saved checkpoints
-    """
-    resume_path = str(resume_path)
-
-    logger.info("Loading checkpoint: {} ...".format(resume_path))
-
-    checkpoint = torch.load(resume_path)
-    model.load_state_dict(checkpoint['state_dict'])
-
-    logger.info("Checkpoint loaded.")
-    

@@ -6,7 +6,7 @@ import data_loader as module_data
 from trainer import loss as module_loss
 from trainer import metric as module_metric
 import model as module_arch
-from utils import prepare_device, resume_checkpoint
+from utils import prepare_device
 from trainer.trainer import Trainer
 from utils.logger import logger
 from utils.config_parser import ConfigParser
@@ -29,8 +29,6 @@ def main(config):
 
     # build model architecture, then print to console
     model = config.init_obj('arch', module_arch)
-    if (config.resume):
-        resume_checkpoint(model, config.resume, logger)
     model = model.to(device)
 
     # get function handles of loss and metrics
@@ -47,6 +45,7 @@ def main(config):
     logger.info("Training {} using device {}".format(config["name"], device))
     trainer = Trainer(model, criterion, metrics, optimizer,
                       config=config.config['trainer'],
+                      resume=config.resume,
                       device=device,
                       data_loader=data_loader,
                       valid_data_loader=val_data_loader,
@@ -58,14 +57,13 @@ def main(config):
 
 if __name__ == '__main__':
 
-    args = argparse.ArgumentParser(description='PyTorch Template')
+    args = argparse.ArgumentParser(description='MOS Prediction Model')
     args.add_argument('-c', '--config', default=None, type=str,
                       help='config file path (default: None)')
     args.add_argument('-r', '--resume', default=None, type=str,
                       help='path to latest checkpoint (default: None)')
     args.add_argument('-d', '--device', default=None, type=str,
                       help='indices of GPUs to enable (default: all)')
-
     # custom cli options to modify configuration from default values given in json file.
     CustomArgs = collections.namedtuple('CustomArgs', 'flags type target')
     options = [
@@ -75,5 +73,4 @@ if __name__ == '__main__':
 
     config = ConfigParser.from_args(args, options)
     logger.config(folder=config._save_dir)
-
     main(config)

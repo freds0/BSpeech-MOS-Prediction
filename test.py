@@ -5,7 +5,7 @@ import numpy as np
 import data_loader as module_data
 from trainer import loss as module_loss
 import model as module_arch
-from utils import prepare_device, resume_checkpoint
+from utils import prepare_device
 from utils.logger import logger
 from utils.config_parser import ConfigParser
 from utils.metric_handler import MetricHandler
@@ -17,6 +17,17 @@ torch.backends.cudnn.deterministic = True
 torch.backends.cudnn.benchmark = False
 np.random.seed(SEED)
 
+
+def resume_checkpoint(model, resume_path, logger):
+    """
+    Resume from saved checkpoints
+    :param resume_path: Checkpoint path to be resumed
+    """
+    resume_path = str(resume_path)
+    logger.info("Loading checkpoint: {} ...".format(resume_path))
+    checkpoint = torch.load(resume_path)
+    model.load_state_dict(checkpoint['state_dict'])
+    logger.info("Checkpoint loaded.")
 
 def main(config):
     # setup data_loader instances

@@ -10,13 +10,14 @@ class Trainer():
     """
     Trainer class
     """
-    def __init__(self, model, criterion, metrics_names, optimizer, config, device,
+    def __init__(self, model, criterion, metrics_names, optimizer, config, resume, device,
                  data_loader, valid_data_loader=None, lr_scheduler=None, logger=None):
         self.model = model
         self.criterion = criterion
         self.metrics_handler = MetricHandler(metrics_names)
         self.optimizer = optimizer
         self.config = config
+        self.resume = resume
         self.device = device
         self.epochs = config['epochs']
         self.data_loader = data_loader
@@ -48,6 +49,10 @@ class Trainer():
 
             if self.early_stop <= 0:
                 self.early_stop = float('inf')
+
+        # Load checkpoint
+        if self.resume is not None:
+            self._resume_checkpoint(self.resume)
 
     def _train_epoch(self, epoch):
         """
