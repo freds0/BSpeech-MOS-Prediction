@@ -3,7 +3,7 @@
     "n_gpu": 1,
 
     "arch": {
-        "type": "Wav2Vec2MOS",
+        "type": "Wav2Vec2MOS_v2",
         "args": {
             "input_dim": 1024
         }
@@ -47,7 +47,7 @@
         "save_period": 1,
         "verbosity": 2,
         "monitor": "max|spearman_corr",
-        "early_stop": 100,
+        "early_stop": 30,
         "epochs": 500,
         "tensorboard": true
     }

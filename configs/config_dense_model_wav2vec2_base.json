@@ -1,5 +1,5 @@
 {
-    "name": "DenseModel_with_VCC2018_wav2vec2_base",
+    "name": "DenseModel_with_VCC2018_wav2vec2_base_960h",
     "n_gpu": 1,
 
     "arch": {
@@ -11,7 +11,7 @@
     "data_loader": {
         "type": "embeddings_dataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_wav2vec-base_embeddings/",
+            "data_dir": "./embeddings/VCC2018_embeddings_wav2vec2-base-960h/",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",
@@ -47,7 +47,7 @@
         "save_period": 1,
         "verbosity": 2,
         "monitor": "max|spearman_corr",
-        "early_stop": 100,
+        "early_stop": 30,
         "epochs": 500,
         "tensorboard": true
     }

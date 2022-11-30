@@ -1,17 +1,17 @@
 {
-    "name": "DenseModel_with_VCC2018_ge2e",
+    "name": "DenseModel_with_VCC2018_clova",
     "n_gpu": 1,
 
     "arch": {
         "type": "dense_model",
         "args": {
-            "input_dim": 256
+            "input_dim": 512
         }
     },
     "data_loader": {
         "type": "nemo_embeddings_dataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_embeddings_ge2e",
+            "data_dir": "./embeddings/VCC2018_embeddings_clova",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",

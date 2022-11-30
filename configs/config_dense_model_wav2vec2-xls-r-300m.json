@@ -3,7 +3,7 @@
     "n_gpu": 1,
 
     "arch": {
-        "type": "Wav2Vec2MOS",
+        "type": "Wav2Vec2MOS_v2",
         "args": {
             "input_dim": 1024
         }

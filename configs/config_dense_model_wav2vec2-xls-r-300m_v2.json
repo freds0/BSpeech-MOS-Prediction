@@ -47,7 +47,7 @@
         "save_period": 1,
         "verbosity": 2,
         "monitor": "max|spearman_corr",
-        "early_stop": 100,
+        "early_stop": 30,
         "epochs": 500,
         "tensorboard": true
     }

@@ -1,5 +1,5 @@
 {
-    "name": "cnn2d_model_with_VCC2018_wav2vec2-xls-r-300m",
+    "name": "cnn2d_model_with_VCC2018_wav2vec2-base",
     "n_gpu": 1,
 
     "arch": {
