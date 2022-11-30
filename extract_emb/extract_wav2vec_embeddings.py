@@ -63,7 +63,7 @@ def main():
     parser.add_argument('-c', '--input_csv', help='Metadata filepath')
     parser.add_argument('-o', '--output_dir', default='output_embeddings', help='Name of csv file')
     parser.add_argument('-m', '--model_name', default="wav2vec2-base-960h",
-                        help="Available models: - wav2vec2-base-960h | wav2vec2-base-100h | wav2vec2-large | wav2vec2-large-robust | wav2vec2-large-xlsr-53 | wav2vec2-xls-r-300m | wav2vec2-xls-r-1b | wav2vec2-xls-r-1b")
+                        help="Available models: - wav2vec2-base-960h | wav2vec2-base-100h | wav2vec2-large | wav2vec2-large-robust | wav2vec2-large-xlsr-53 | wav2vec2-xls-r-300m | wav2vec2-xls-r-1b | wav2vec2-xls-r-2b")
     args = parser.parse_args()
 
     output_dir = join(args.base_dir, args.output_dir)
