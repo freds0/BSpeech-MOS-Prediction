@@ -7,7 +7,7 @@ This folder has the scripts needed to extract the embeddings used in this work.
 To extract the embeddings using the Hubert, Wav2Vec or Whisper models, it is necessary to install the following requirements:
 
 ```bash
-$ pip install transfomers tqdm 
+$ pip install transformers tqdm 
 ```
 
 It is also necessary to install the Pytorch framework:
