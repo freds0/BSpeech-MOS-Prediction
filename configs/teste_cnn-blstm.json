@@ -1,0 +1,54 @@
+{
+    "name": "Wav2VecCNN_LSTM_model_with_BRSpeech",
+    "n_gpu": 1,
+
+    "arch": {
+        "type": "Wav2Vec_cnn_blstm",
+        "args": {
+            "input_dim": 1024
+        }
+    },
+    "data_loader": {
+        "type": "wav2vec_embeddings_dataloader",
+        "args":{
+            "data_dir": "./embeddings/BRSpeech_embeddings_wav2vec2-xls-r-300m/",
+            "metadata_file": "train.csv",
+            "val_metadata_file": "test.csv",
+            "emb_dir": "data",
+            "train_batch_size": 128,
+            "val_batch_size": 128,
+            "shuffle": true
+        }
+    },
+    "optimizer": {
+        "type": "Adam",
+        "args":{
+            "lr": 0.001,
+            "weight_decay": 0,
+            "amsgrad": true
+        }
+    },
+    "loss": "mse_loss",
+    "metrics": [
+        "spearman_corr", "pearson_corr"
+    ],
+    "lr_scheduler": {
+        "type": "StepLR",
+        "args": {
+            "step_size": 100,
+            "gamma": 0.01
+        }
+    },
+    "trainer": {
+        "save_dir": "checkpoints",
+        "n_checkpoints": 2,
+        "log_dir": "logs",
+        "log_step": 25,
+        "save_period": 1,
+        "verbosity": 2,
+        "monitor": "max|spearman_corr",
+        "early_stop": 30,
+        "epochs": 500,
+        "tensorboard": true
+    }
+}
