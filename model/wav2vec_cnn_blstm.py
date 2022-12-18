@@ -34,7 +34,7 @@ class Wav2Vec_cnn_blstm(nn.Module):
     def __init__(self, input_dim=1024):
         super(Wav2Vec_cnn_blstm, self).__init__()        
         self.conv = conv1d_block(input_dim)
-        self.lstm = nn.LSTM(input_size=128, hidden_size=32, num_layers=2, bidirectional=True) 
+        self.lstm = nn.LSTM(input_size=128, hidden_size=32, num_layers=2, bidirectional=True, batch_first=True) 
         # First fully connected layer
         self.fc = nn.Linear(2*32, 1)
         
@@ -46,7 +46,7 @@ class Wav2Vec_cnn_blstm(nn.Module):
         # x dimension: torch.Size([batch_size, conv_out, seq_len])
         x = x.transpose(1,2)
         # x dimension: torch.Size([batch_size, seq_len, conv_out])
-        out = (hidden_state, cell_state) = self.lstm(x)
+        out, (hidden_state, cell_state) = self.lstm(x)
         x = out.mean(-2)
         # x dimension: torch.Size([batch_size, conv_out])
         out = self.fc(x)
