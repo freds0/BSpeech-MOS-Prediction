@@ -4,4 +4,7 @@ from .lstm_model import *
 from .wav2vec_model import *
 from .wav2vec_model_v2 import *
 from .wav2vec_conn1d import *
+from .wav2vec_cnn_blstm import *
+from .wav2vec_blstm import *
+from .wav2vec_attention_pooling_model import *
 from .cnn1d_model import *
