@@ -34,6 +34,10 @@ def main(config):
     # get function handles of loss and metrics
     metrics = config['metrics']
     criterion = getattr(module_loss, config['loss'])
+    if config['loss'].startswith('weighted'):
+        weighted = True
+    else:
+        weighted = False
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
     trainable_params = filter(lambda p: p.requires_grad, model.parameters())
@@ -48,6 +52,7 @@ def main(config):
                       resume=config.resume,
                       device=device,
                       data_loader=data_loader,
+                      weighted=weighted,
                       valid_data_loader=val_data_loader,
                       lr_scheduler=lr_scheduler,
                       logger=logger
