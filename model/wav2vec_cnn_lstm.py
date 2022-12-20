@@ -1,8 +1,8 @@
 import torch.nn as nn
 
-class conv1d_block(nn.Module):
+class Conv1dBlock(nn.Module):
     def __init__(self, input_dim=1024):
-        super(conv1d_block, self).__init__()
+        super(Conv1dBlock, self).__init__()
 
         self.conv1 = nn.Sequential(            
             nn.Conv1d(input_dim, 512, 
@@ -30,10 +30,10 @@ class conv1d_block(nn.Module):
         return out
 
 
-class Wav2Vec_cnn_blstm(nn.Module):
+class Wav2VecCNN_LSTM(nn.Module):
     def __init__(self, input_dim=1024):
-        super(Wav2Vec_cnn_blstm, self).__init__()        
-        self.conv = conv1d_block(input_dim)
+        super(Wav2VecCNN_LSTM, self).__init__()
+        self.conv = Conv1dBlock(input_dim)
         self.lstm = nn.LSTM(input_size=128, hidden_size=32, num_layers=2, bidirectional=True, batch_first=True) 
         # First fully connected layer
         self.fc = nn.Linear(2*32, 1)

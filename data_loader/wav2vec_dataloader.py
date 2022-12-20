@@ -5,7 +5,7 @@ from utils.logger import logger
 from os.path import join
 import pandas as pd
 
-class Wav2vecEmbeddingsDataset(Dataset):
+class Wav2VecDataset(Dataset):
     def __init__(self, filepaths: list, scores: list):
         self.filepaths = filepaths
         self.scores = scores
@@ -22,11 +22,11 @@ class Wav2vecEmbeddingsDataset(Dataset):
         return embedding, score
 
 
-def Wav2vecembedding_collate_fn(data):
+def Wav2VecCollateFunction(data):
     """
-       data: is a list of tuples with (example, label, length)
-             where 'example' is a tensor of arbitrary shape
-             and label/length are scalars
+       data: is a list of tuples with (feature, score)
+             where 'feature' is a tensor of arbitrary shape
+             and score is a scalar
     """
     features = []
     scores = []
@@ -34,20 +34,18 @@ def Wav2vecembedding_collate_fn(data):
         features.append(feature)
         scores.append(score)
 
-    features = pad_sequence([f.squeeze() for f in features], batch_first=True)#squeeze()
-    features = features
+    features = pad_sequence([f.squeeze() for f in features], batch_first=True)
     scores = torch.tensor(scores)
     return features, scores
 
 
-class wav2vec_embeddings_dataloader(DataLoader):
+class Wav2VecDataloader(DataLoader):
     def __init__(self, data_dir, metadata_file, val_metadata_file, emb_dir, train_batch_size, val_batch_size, shuffle=False):
         self.train_batch_size = train_batch_size
         self.val_batch_size = val_batch_size
         self.shuffle = shuffle
         self.data_dir = data_dir
         self.emb_dir = emb_dir
-        #self.seed = 42
         self.val_metadata = join(data_dir, val_metadata_file)
 
         train_data = pd.read_csv(join(data_dir, metadata_file))
@@ -56,21 +54,10 @@ class wav2vec_embeddings_dataloader(DataLoader):
         train_data['filepath'] = str(self.data_dir + "/" + self.emb_dir + "/") + train_data['filepath'] + ".pt"
         train_filepaths = train_data['filepath'].to_list()
 
-        #random.seed(self.seed)
-
-        #train_filepaths = train_filepaths[:int((len(train_filepaths) + 1) * validation_split)]
-        #train_scores = train_scores[:int((len(train_scores) + 1) * validation_split)]
-
         logger.info("Dataset {} training files loaded".format(len(train_filepaths)))
-        #random.seed(self.seed)
-        #test_filepaths = filepaths[int((len(filepaths) + 1) * validation_split):]
-        #test_scores = filepaths[:int((len(scores) + 1) * validation_split)]
 
-        #self.train_dataset = EmbeddingsDataset(train_filepaths, train_scores)
-        #self.test_dataset = EmbeddingsDataset(test_filepaths, test_scores)
-
-        self.dataset = Wav2vecEmbeddingsDataset(train_filepaths, train_scores)
-        super().__init__(dataset=self.dataset, batch_size=self.train_batch_size, shuffle=False, num_workers=0, collate_fn=Wav2vecembedding_collate_fn)
+        self.dataset = Wav2VecDataset(train_filepaths, train_scores)
+        super().__init__(dataset=self.dataset, batch_size=self.train_batch_size, shuffle=False, num_workers=0, collate_fn=Wav2VecCollateFunction)
 
 
     def get_val_dataloader(self):
@@ -82,5 +69,5 @@ class wav2vec_embeddings_dataloader(DataLoader):
         val_filepaths = val_data['filepath'].to_list()
 
         print("Dataset {} validating files loaded".format(len(val_filepaths)))
-        self.val_dataset = Wav2vecEmbeddingsDataset(val_filepaths, val_scores)
-        return DataLoader(dataset=self.val_dataset, batch_size=self.val_batch_size, shuffle=False, num_workers=0, collate_fn=Wav2vecembedding_collate_fn)
+        self.val_dataset = Wav2VecDataset(val_filepaths, val_scores)
+        return DataLoader(dataset=self.val_dataset, batch_size=self.val_batch_size, shuffle=False, num_workers=0, collate_fn=Wav2VecCollateFunction)

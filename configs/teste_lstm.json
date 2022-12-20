@@ -1,22 +1,22 @@
 {
-    "name": "Wav2Vec_CNN_LSTM_model_with_VCC2018",
+    "name": "Wav2VecLSTM_model_with_BRSpeech",
     "n_gpu": 1,
 
     "arch": {
-        "type": "Wav2Vec_cnn_blstm",
+        "type": "Wav2VecLSTM",
         "args": {
             "input_dim": 1024
         }
     },
     "data_loader": {
-        "type": "wav2vec_embeddings_dataloader",
+        "type": "Wav2VecDataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_embeddings_wav2vec2-xls-r-300m/",
+            "data_dir": "./embeddings/BRSpeech_embeddings_wav2vec2-xls-r-300m/",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",
-            "train_batch_size": 1024,
-            "val_batch_size": 1024,
+            "train_batch_size": 32,
+            "val_batch_size": 32,
             "shuffle": true
         }
     },

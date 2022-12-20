@@ -3,17 +3,16 @@ import numpy as np
 import torch
 from torch.utils.tensorboard import SummaryWriter
 from utils.metric_handler import MetricHandler
-
-#from torchmetrics import PearsonCorrCoef, SpearmanCorrCoef
-
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 class Trainer():
     """
     Trainer class
     """
     def __init__(self, model, criterion, metrics_names, optimizer, config, resume, device,
-                 data_loader, valid_data_loader=None, lr_scheduler=None, logger=None):
+                 data_loader, weighted=False, valid_data_loader=None, lr_scheduler=None, logger=None):
         self.model = model
         self.criterion = criterion
+        self.weighted = weighted
         self.metrics_handler = MetricHandler(metrics_names)
         self.optimizer = optimizer
         self.config = config
@@ -61,18 +60,25 @@ class Trainer():
         :return: A dict with train and val metrics
         """
         self.model.train()
-        #self.train_metrics.reset()
 
         total_steps = len(self.data_loader)
 
         outputs = np.array([])
         targets = np.array([])
         total_loss = 0
-        for batch_idx, (data, target) in enumerate(self.data_loader):
-            data, target = data.to(self.device, dtype=torch.float32), target.to(self.device, dtype=torch.float32)
+        for batch_idx, input_data in enumerate(self.data_loader):
+            if not self.weighted:
+                (data, target) = input_data
+                data, target = data.to(self.device, dtype=torch.float32), target.to(self.device, dtype=torch.float32)
+            else:
+                (data, target, weight) = input_data
+                data, target, weight = data.to(self.device, dtype=torch.float32), target.to(self.device, dtype=torch.float32), weight.to(self.device, dtype=torch.float32)
             self.optimizer.zero_grad()
             output = self.model(data)
-            loss = self.criterion(output, target)
+            if not self.weighted:
+                loss = self.criterion(output, target)
+            else:
+                loss = self.criterion(output, target, weight)
             loss.backward()
             self.optimizer.step()
             total_loss += loss.item()
@@ -106,10 +112,18 @@ class Trainer():
         targets = np.array([])
         total_loss = 0
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
-                data, target = data.to(self.device), target.to(self.device)
+            for batch_idx, input_data in enumerate(self.valid_data_loader):
+                if not self.weighted:
+                    data, target = input_data
+                    data, target = data.to(self.device), target.to(self.device)
+                else:
+                    data, target, weight = input_data
+                    data, target, weight = data.to(self.device), target.to(self.device), weight.to(self.device)
                 output = self.model(data)
-                loss = self.criterion(output, target)
+                if not self.weighted:
+                    loss = self.criterion(output, target)
+                else:
+                    loss = self.criterion(output, target, weight)
                 total_loss += loss.item()
                 outputs = np.concatenate([outputs, output.squeeze().detach().cpu().numpy()])
                 targets = np.concatenate([targets, target.detach().cpu().numpy()])

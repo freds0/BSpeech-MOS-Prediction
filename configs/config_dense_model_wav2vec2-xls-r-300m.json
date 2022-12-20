@@ -3,15 +3,15 @@
     "n_gpu": 1,
 
     "arch": {
-        "type": "Wav2Vec2MOS_v2",
+        "type": "Wav2VecFullyConnected",
         "args": {
             "input_dim": 1024
         }
     },
     "data_loader": {
-        "type": "wav2vec_embeddings_dataloader",
+        "type": "Wav2VecDataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_embeddings_wav2vec2-xls-r-300m/",
+            "data_dir": "./embeddings/BRSpeech_embeddings_wav2vec2-xls-r-300m/",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",

@@ -1,6 +1,6 @@
 import torch.nn as nn
 
-class Wav2Vec2MOS_v2(nn.Module):
+class Wav2VecFullyConnected(nn.Module):
     def __init__(self, input_dim=1024):
         super().__init__()
         self.dense1 = nn.Sequential(

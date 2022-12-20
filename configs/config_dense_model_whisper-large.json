@@ -3,13 +3,13 @@
     "n_gpu": 1,
 
     "arch": {
-        "type": "Wav2Vec2MOS_v2",
+        "type": "Wav2VecFullyConnected",
         "args": {
             "input_dim": 1280
         }
     },
     "data_loader": {
-        "type": "wav2vec_embeddings_dataloader",
+        "type": "Wav2VecDataloader",
         "args":{
             "data_dir": "./embeddings/VCC2018_embeddings_whisper-large/",
             "metadata_file": "train.csv",

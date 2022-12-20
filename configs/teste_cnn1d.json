@@ -9,7 +9,7 @@
         }
     },
     "data_loader": {
-        "type": "wav2vec_embeddings_dataloader",
+        "type": "Wav2VecDataloader",
         "args":{
             "data_dir": "./embeddings/BRSpeech_embeddings_wav2vec2-xls-r-300m/",
             "metadata_file": "train.csv",

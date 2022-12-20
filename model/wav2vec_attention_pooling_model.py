@@ -35,12 +35,11 @@ class Wav2VecAttentionPooling(nn.Module):
         super().__init__()
         self.att_pool = SelfAttentionPooling(input_dim)
         self.dense = nn.Sequential(
-            nn.Linear(input_dim, 128),
+            nn.Linear(input_dim, 4096),
             nn.ReLU(),
-            nn.Dropout(0.1),
-            nn.Linear(128, 1)
+            nn.Dropout(0.5),
+            nn.Linear(4096, 1)
         )
-
     def forward(self, x):
         # x = x['last_hidden_state'] # [Batch, time, feats]
         x = self.att_pool(x)
