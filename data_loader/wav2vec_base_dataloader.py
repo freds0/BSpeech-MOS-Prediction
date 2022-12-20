@@ -1,11 +1,12 @@
 import torch
 from torch.utils.data import Dataset, DataLoader
-from torch.nn.utils.rnn import pad_sequence
-from utils.logger import logger
+from torch.nn.utils.rnn import pad_sequence 
 from os.path import join
 import pandas as pd
+import random
+from utils.logger import logger
 
-class cnn2d_embedding_dataset(Dataset):
+class embeddings_dataset(Dataset):
     def __init__(self, filepaths: list, scores: list):
         self.filepaths = filepaths
         self.scores = scores
@@ -15,20 +16,29 @@ class cnn2d_embedding_dataset(Dataset):
 
     def __getitem__(self, idx):
         filename = self.filepaths[idx]
-        embedding = torch.load(filename)
+        embedding = torch.load(filename)#.transpose(2,1)
+        embedding = embedding.mean(axis=-1)
         score = self.scores[idx]
+        #return {"data": embedding, "score": score}
         return embedding, score
 
 
-def cnn2d_embedding_collate_fn(data):
-    #features = [d[0] for d in data]
-    features = [torch.transpose(d[0], 1, 2) for d in data]
-    scores = torch.tensor([d[1] for d in data])
-    new_features = pad_sequence([f.permute(*torch.arange(f.ndim - 1, -1, -1)) for f in features], batch_first=True).squeeze().unsqueeze(1)
-    return new_features, scores
+def embedding_collate_fn(data):
+    """
+       data: is a list of tuples with (example, label, length)
+             where 'example' is a tensor of arbitrary shape
+             and label/length are scalars
+    """
+    features = [torch.tensor(d['data']) for d in data] #(3)
+    scores = torch.tensor([d['score']  for d in data])
+    new_features = pad_sequence([f.T for f in features], batch_first=True).squeeze()
 
+    return  {
+        'data': new_features,
+        'score': scores
+    }
 
-class cnn2d_embeddings_dataloader(DataLoader):
+class Wav2VecBaseDataloader(DataLoader):
     def __init__(self, data_dir, metadata_file, val_metadata_file, emb_dir, train_batch_size, val_batch_size, shuffle=False, validation_split=0.1, training=True):
         self.train_batch_size = train_batch_size
         self.val_batch_size = val_batch_size
@@ -43,14 +53,13 @@ class cnn2d_embeddings_dataloader(DataLoader):
         train_scores = train_data['score'].to_list()
         train_data['filepath'] = str(self.data_dir + "/" + self.emb_dir + "/") + train_data['filepath'] + ".pt"
         train_filepaths = train_data['filepath'].to_list()
-
         logger.info("Dataset {} training files loaded".format(len(train_filepaths)))
-
-        self.dataset = cnn2d_embedding_dataset(train_filepaths, train_scores)
-        super().__init__(dataset=self.dataset, batch_size=self.train_batch_size, shuffle=False, num_workers=0, collate_fn=cnn2d_embedding_collate_fn)
+        self.dataset = embeddings_dataset(train_filepaths, train_scores)
+        super().__init__(dataset=self.dataset, batch_size=self.train_batch_size, shuffle=False, num_workers=0)
 
 
     def get_val_dataloader(self):
+
         val_data = pd.read_csv(self.val_metadata)
         val_data['score'] = val_data['score'] / val_data['score'].max()
         val_scores = val_data['score'].to_list()
@@ -58,5 +67,5 @@ class cnn2d_embeddings_dataloader(DataLoader):
         val_filepaths = val_data['filepath'].to_list()
 
         logger.info("Dataset {} validating files loaded".format(len(val_filepaths)))
-        self.val_dataset = cnn2d_embedding_dataset(val_filepaths, val_scores)
-        return DataLoader(dataset=self.val_dataset, batch_size=self.val_batch_size, shuffle=False, num_workers=0, collate_fn=cnn2d_embedding_collate_fn)
+        self.val_dataset = embeddings_dataset(val_filepaths, val_scores)
+        return DataLoader(dataset=self.val_dataset, batch_size=self.val_batch_size, shuffle=False, num_workers=0)

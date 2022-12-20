@@ -22,9 +22,9 @@ class conv1d_block(nn.Module):
 '''
 
 
-class conv1d_block(nn.Module):
+class ConvBlock(nn.Module):
     def __init__(self):
-        super(conv1d_block, self).__init__()
+        super(ConvBlock, self).__init__()
 
         self.conv1 = nn.Sequential(
             torch.nn.Conv1d(1, 8,
@@ -52,10 +52,10 @@ class conv1d_block(nn.Module):
         return out
 
 
-class conv1d_model(nn.Module):
+class EmbeddingCNN1D(nn.Module):
     def __init__(self):
-        super(conv1d_model, self).__init__()
-        self.conv = conv1d_block()
+        super(EmbeddingCNN1D, self).__init__()
+        self.conv = ConvBlock()
         # First fully connected layer
         self.fc = nn.Linear(128, 1)
 

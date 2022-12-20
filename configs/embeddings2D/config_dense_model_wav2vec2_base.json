@@ -1,21 +1,23 @@
 {
-    "name": "cnn2d_model_with_VCC2018_wav2vec2-base",
+    "name": "DenseModel_with_VCC2018_wav2vec2_base_960h",
     "n_gpu": 1,
 
     "arch": {
-        "type": "cnn2d_model",
-        "args": {}
+        "type": "dense_model",
+        "args": {
+            "input_dim": 512
+        }
     },
     "data_loader": {
-        "type": "cnn2d_embeddings_dataloader",
+        "type": "Wav2VecBaseDataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_wav2vec-base_embeddings/",
+            "data_dir": "./embeddings/VCC2018_embeddings_wav2vec2-base-960h/",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",
-            "train_batch_size": 4,
-            "val_batch_size": 2,
-            "shuffle": false
+            "train_batch_size": 128,
+            "val_batch_size": 128,
+            "shuffle": true
         }
     },
     "optimizer": {

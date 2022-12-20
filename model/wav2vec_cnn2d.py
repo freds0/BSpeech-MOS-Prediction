@@ -2,7 +2,10 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-class conv_block(nn.Module):
+class ConvBlock(nn.Module):
+    '''
+    Source: https://www.kaggle.com/code/mhiro2/simple-2d-cnn-classifier-with-pytorch
+    '''
     def __init__(self, in_channels, out_channels):
         super().__init__()
 
@@ -36,14 +39,14 @@ class conv_block(nn.Module):
         return x
 
 
-class cnn2d_model(nn.Module):
+class Wav2VecCNN2D(nn.Module):
     def __init__(self):
         super().__init__()
 
         self.conv = nn.Sequential(
-            conv_block(in_channels=1, out_channels=64),
-            conv_block(in_channels=64, out_channels=128),
-            conv_block(in_channels=128, out_channels=256),
+            ConvBlock(in_channels=1, out_channels=64),
+            ConvBlock(in_channels=64, out_channels=128),
+            ConvBlock(in_channels=128, out_channels=256),
             #conv_block(in_channels=256, out_channels=512),
         )
 

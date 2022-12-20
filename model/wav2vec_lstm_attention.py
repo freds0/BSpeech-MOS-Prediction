@@ -8,7 +8,7 @@ class Wav2VecLSTM_Attention(nn.Module):
     Source: https://github.com/shangeth/wavencoder/blob/master/wavencoder/models/lstm_classifier.py
     '''
     def __init__(self, input_dim=1024, hidden_size=1024, return_attn_weights=False, attn_type='dot'):
-        super(Wav2VecLSTMAttention, self).__init__()
+        super(Wav2VecLSTM_Attention, self).__init__()
         self.return_attn_weights = return_attn_weights
         self.attn_type = attn_type
         

@@ -13,17 +13,6 @@ def weighted_mse_loss(inputs, targets, weights=None):
     loss = torch.mean(loss)
     return loss
 
-def spearman_correlation_loss(output, target, regularization="l2", regularization_strength=1.0):
-    '''
-    Source-code: https://forum.numer.ai/t/differentiable-spearman-in-pytorch-optimize-for-corr-directly/2287
-    '''
-    # fast_soft_sort uses 1-based indexing, divide by len to compute percentage of rank
-    pred = soft_rank(
-        pred,
-        regularization=regularization,
-        regularization_strength=regularization_strength,
-    )
-    return corrcoef(target, pred / pred.shape[-1])
 
 def weighted_l1_loss(inputs, targets, weights=None):
     inputs = inputs.squeeze()
@@ -69,3 +58,16 @@ def weighted_huber_loss(inputs, targets, weights=None, beta=1.):
         loss *= weights.expand_as(loss)
     loss = torch.mean(loss)
     return 
+
+
+def spearman_correlation_loss(output, target, regularization="l2", regularization_strength=1.0):
+    '''
+    Source-code: https://forum.numer.ai/t/differentiable-spearman-in-pytorch-optimize-for-corr-directly/2287
+    '''
+    # fast_soft_sort uses 1-based indexing, divide by len to compute percentage of rank
+    pred = soft_rank(
+        pred,
+        regularization=regularization,
+        regularization_strength=regularization_strength,
+    )
+    return corrcoef(target, pred / pred.shape[-1])

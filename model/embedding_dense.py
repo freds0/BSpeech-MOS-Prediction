@@ -2,7 +2,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch
 
-class dense_model(nn.Module):
+class EmbeddingFullyConnected(nn.Module):
 
     def __init__(self, input_dim=1024):
         super().__init__()

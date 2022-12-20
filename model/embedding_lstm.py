@@ -4,9 +4,9 @@ import torch.nn.functional as F
 import math
 
 
-class LSTM_model(nn.Module):
+class EmbeddingLSTM(nn.Module):
     def __init__(self, feature_shape=128, num_layers_lstm=3, hidden_size=512, batch_size=16, bidirectional=True):
-        super(LSTM_model, self).__init__()
+        super(EmbeddingLSTM, self).__init__()
 
         self.lstm = nn.LSTM(input_size=feature_shape, hidden_size=hidden_size, num_layers=num_layers_lstm, bidirectional=bidirectional, batch_first=True)
         self.dropout = nn.Dropout(0.2)

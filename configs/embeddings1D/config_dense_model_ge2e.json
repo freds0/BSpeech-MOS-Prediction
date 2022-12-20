@@ -3,13 +3,13 @@
     "n_gpu": 1,
 
     "arch": {
-        "type": "dense_model",
+        "type": "EmbeddingFullyConnected",
         "args": {
             "input_dim": 256
         }
     },
     "data_loader": {
-        "type": "nemo_embeddings_dataloader",
+        "type": "EmbeddingsDataloader",
         "args":{
             "data_dir": "./embeddings/VCC2018_embeddings_ge2e",
             "metadata_file": "train.csv",

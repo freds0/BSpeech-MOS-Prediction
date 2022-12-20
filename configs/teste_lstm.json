@@ -1,5 +1,5 @@
 {
-    "name": "Wav2VecLSTM_model_with_BRSpeech",
+    "name": "Wav2Vec_LSTM_model_with_BRSpeech",
     "n_gpu": 1,
 
     "arch": {

@@ -1,15 +1,17 @@
 {
-    "name": "cnn1d_model_with_VCC2018_titanet",
+    "name": "DenseModel_with_VCC2018_SpeakerNet",
     "n_gpu": 1,
 
     "arch": {
-        "type": "conv1d_model",
-        "args": {}
+        "type": "EmbeddingFullyConnected",
+        "args": {
+            "input_dim": 256
+        }
     },
     "data_loader": {
-        "type": "nemo_embeddings_dataloader",
+        "type": "EmbeddingsDataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_titanet_embeddings/",
+            "data_dir": "./embeddings/VCC2018_embeddings_speakernet/",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",

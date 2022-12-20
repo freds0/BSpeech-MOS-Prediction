@@ -1,17 +1,17 @@
 {
-    "name": "DenseModel_with_VCC2018_titanet",
+    "name": "DenseModel_with_VCC2018_clova",
     "n_gpu": 1,
 
     "arch": {
-        "type": "dense_model",
+        "type": "EmbeddingFullyConnected",
         "args": {
-            "input_dim": 192
+            "input_dim": 512
         }
     },
     "data_loader": {
-        "type": "weighted_nemo_embeddings_dataloader",
+        "type": "EmbeddingsDataloader",
         "args":{
-            "data_dir": "./embeddings/VCC2018_embeddings_titanet/",
+            "data_dir": "./embeddings/VCC2018_embeddings_clova",
             "metadata_file": "train.csv",
             "val_metadata_file": "test.csv",
             "emb_dir": "data",
@@ -28,7 +28,7 @@
             "amsgrad": true
         }
     },
-    "loss": "weighted_l1_loss",
+    "loss": "mse_loss",
     "metrics": [
         "spearman_corr", "pearson_corr"
     ],
