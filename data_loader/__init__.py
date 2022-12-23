@@ -1,4 +1,6 @@
 from .embeddings_dataloader import EmbeddingsDataloader
+from .weighted_embeddings_dataloader import WeightedEmbeddingsDataloader
 from .wav2vec_base_dataloader import Wav2VecBaseDataloader
 from .wav2vec_dataloader import Wav2VecDataloader
 from .wav2vec_cnn2d_dataloader import Wav2VecCNN2DDataloader
+from .weighted_wav2vec_dataloader import WeightedWav2VecDataloader

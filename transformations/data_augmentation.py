@@ -101,18 +101,19 @@ def main():
 
     for filepath, score, weight in tqdm(filelist_scores_weights):
         index = 0
-        #for index in range(min(max_augmentations, int(weight)))
-        filename = "aug{}-{}".format(index, basename(filepath))
-        in_filepath = join(input_dir, filepath)
-        out_filepath = join(output_dir, filename)
-        if not exists(in_filepath):
-            print("File not found: {}".format(in_filepath))
-            continue
-        execute_transformations(in_filepath, out_filepath)
+        for index in range(min(max_augmentations, int(weight) -1 )):
 
-        # Write to output csv file
-        line = separator.join([filename, str(score)])
-        output_file.write(line + '\n')
+            filename = "aug{}-{}".format(index, basename(filepath))
+            in_filepath = join(input_dir, filepath)
+            out_filepath = join(output_dir, filename)
+            if not exists(in_filepath):
+                print("File not found: {}".format(in_filepath))
+                continue
+            execute_transformations(in_filepath, out_filepath)
+
+            # Write to output csv file
+            line = separator.join([filename, str(score)])
+            output_file.write(line + '\n')
 
     output_file.close()
 

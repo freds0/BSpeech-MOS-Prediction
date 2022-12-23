@@ -1,5 +1,5 @@
 {
-    "name": "DenseModel_with_VCC2018_titanet",
+    "name": "DenseModel_weighted_with_VCC2018_titanet",
     "n_gpu": 1,
 
     "arch": {
@@ -28,7 +28,7 @@
             "amsgrad": true
         }
     },
-    "loss": "weighted_l1_loss",
+    "loss": "weighted_huber_loss",
     "metrics": [
         "spearman_corr", "pearson_corr"
     ],

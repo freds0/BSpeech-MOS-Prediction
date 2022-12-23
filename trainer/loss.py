@@ -57,7 +57,7 @@ def weighted_huber_loss(inputs, targets, weights=None, beta=1.):
     if weights is not None:
         loss *= weights.expand_as(loss)
     loss = torch.mean(loss)
-    return 
+    return loss
 
 
 def spearman_correlation_loss(output, target, regularization="l2", regularization_strength=1.0):
