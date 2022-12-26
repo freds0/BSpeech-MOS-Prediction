@@ -25,15 +25,17 @@ def execute_transformations(input_filepath, output_filepath):
         Trimming(top_db_range=(30, 60), p=0.6)
     ])
     transformed_waveform = transforms(waveform)
-    transformed_waveform = torch.tensor(transformed_waveform * MAX_VALUE, dtype=torch.int16)
+    #transformed_waveform = torch.tensor(transformed_waveform * MAX_VALUE, dtype=torch.int16)
+    transformed_waveform = transformed_waveform * MAX_VALUE
+    transformed_waveform = transformed_waveform.type(torch.int16)
     torchaudio.save(filepath=output_filepath, src=transformed_waveform, sample_rate=sr, encoding="PCM_S", bits_per_sample=16)
 
 
 def create_values_bins():
     #bins = [i/3 for i in range(3,16,1)]
     #bins = [i/5 for i in range(5,26,1)]
-    #bins = [i/10 for i in range(10,51,1)]
-    bins = [i/4 for i in range(4,21,1)]
+    bins = [i/10 for i in range(10,51,1)]
+    #bins = [i/4 for i in range(4,21,1)]
     return bins
 
 
@@ -63,7 +65,8 @@ def create_weights(filelist_scores):
     filelist_scores_weights = []
     for filepath, score in filelist_scores:
         index = get_index_bin(score)
-        weight = max_value / value_counts[index]
+        #weight = max_value / value_counts[index]
+        weight = value_counts[index]
         item = (filepath, score, weight)
         filelist_scores_weights.append(item)
 
@@ -92,7 +95,7 @@ def main():
 
     filelist_scores_weights = create_weights(filelist)
     makedirs(output_dir, exist_ok=True)
-    max_augmentations = 4
+    max_augmentations = 10
     # Creating output file header
     output_file = open(output_csv, 'w')
     separator = ","
@@ -102,10 +105,9 @@ def main():
     for filepath, score, weight in tqdm(filelist_scores_weights):
         index = 0
         for index in range(min(max_augmentations, int(weight) -1 )):
-
             filename = "aug{}-{}".format(index, basename(filepath))
-            in_filepath = join(input_dir, filepath)
-            out_filepath = join(output_dir, filename)
+            in_filepath = join(input_dir, filepath + ".wav")
+            out_filepath = join(output_dir, filename + ".wav")
             if not exists(in_filepath):
                 print("File not found: {}".format(in_filepath))
                 continue

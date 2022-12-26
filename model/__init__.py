@@ -2,6 +2,7 @@ from .embedding_cnn1d import EmbeddingCNN1D
 from .embedding_dense import EmbeddingFullyConnected
 from .embedding_lstm import EmbeddingLSTM
 from .wav2vec_dense import Wav2VecFullyConnected
+from .wav2vec_dense_time_distributed import Wav2VecFullyConnectedTimeDistributed
 from .wav2vec_cnn1d import Wav2VecCNN1D
 from .wav2vec_cnn_lstm import Wav2VecCNN_LSTM
 from .wav2vec_cnn2d import Wav2VecCNN2D
