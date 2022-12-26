@@ -34,8 +34,8 @@ def execute_transformations(input_filepath, output_filepath):
 def create_values_bins():
     #bins = [i/3 for i in range(3,16,1)]
     #bins = [i/5 for i in range(5,26,1)]
-    bins = [i/10 for i in range(10,51,1)]
-    #bins = [i/4 for i in range(4,21,1)]
+    #bins = [i/10 for i in range(10,51,1)]
+    bins = [i/4 for i in range(4,21,1)]
     return bins
 
 
@@ -65,8 +65,7 @@ def create_weights(filelist_scores):
     filelist_scores_weights = []
     for filepath, score in filelist_scores:
         index = get_index_bin(score)
-        #weight = max_value / value_counts[index]
-        weight = value_counts[index]
+        weight = max_value / value_counts[index]
         item = (filepath, score, weight)
         filelist_scores_weights.append(item)
 
