@@ -5,6 +5,7 @@ from pad_crop import PadCrop
 from speech_change import SpeedChange
 from time_shift import TimeShift
 from trimming import Trimming
+from invert_phase import InvertPhase
 import torch
 from os.path import join, exists, basename
 from os import makedirs
@@ -22,7 +23,8 @@ def execute_transformations(input_filepath, output_filepath):
         SpeedChange(factor_range=(0.85, 1.15), p=0.6),
         PadCrop(pad_crop_value, crop_position='random', pad_position='random', p=0.6),
         TimeShift(shift_factor=(10, 50), p=0.6),
-        Trimming(top_db_range=(30, 60), p=0.6)
+        Trimming(top_db_range=(30, 60), p=0.6),
+        InvertPhase(p=0.6)
     ])
     transformed_waveform = transforms(waveform)
     #transformed_waveform = torch.tensor(transformed_waveform * MAX_VALUE, dtype=torch.int16)
@@ -65,7 +67,7 @@ def create_weights(filelist_scores):
     filelist_scores_weights = []
     for filepath, score in filelist_scores:
         index = get_index_bin(score)
-        weight = max_value / value_counts[index]
+        weight =(10 * max_value) / value_counts[index]
         item = (filepath, score, weight)
         filelist_scores_weights.append(item)
 
@@ -94,18 +96,18 @@ def main():
 
     filelist_scores_weights = create_weights(filelist)
     makedirs(output_dir, exist_ok=True)
-    max_augmentations = 10
+    max_augmentations = 50
     # Creating output file header
     output_file = open(output_csv, 'w')
     separator = ","
-    line = separator.join(['filepath', 'score'])
+    line = separator.join(['filepath', 'mos'])
     output_file.write(line + '\n')
 
     for filepath, score, weight in tqdm(filelist_scores_weights):
         index = 0
         for index in range(min(max_augmentations, int(weight) -1 )):
             filename = "aug{}-{}".format(index, basename(filepath))
-            in_filepath = join(input_dir, filepath + ".wav")
+            in_filepath = join(input_dir, filepath.replace(".wav", "") + ".wav")
             out_filepath = join(output_dir, filename + ".wav")
             if not exists(in_filepath):
                 print("File not found: {}".format(in_filepath))
