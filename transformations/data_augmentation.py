@@ -100,7 +100,7 @@ def main():
     # Creating output file header
     output_file = open(output_csv, 'w')
     separator = ","
-    line = separator.join(['filepath', 'mos'])
+    line = separator.join(['filepath', 'score'])
     output_file.write(line + '\n')
 
     for filepath, score, weight in tqdm(filelist_scores_weights):
