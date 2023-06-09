@@ -49,5 +49,12 @@ To evaluate your model, run the following command:
 $ python test.py -c configs/config_model.json
 ```
 
+## Citation
 
-
+@inproceedings{cmltts,
+  title={Evaluation of Speech Representations for MOS prediction},
+  author={Oliveira, Frederico S. and Casanova, Edresson and Junior, Arnaldo Candido and Gris, Lucas R. S. and Soares, Anderson S. and Galvão, Arlindo},
+  booktitle={International Conference on Text, Speech, and Dialogue},
+  year={2023},
+  organization={Springer}
+}
