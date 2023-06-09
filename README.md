@@ -7,6 +7,10 @@ This repository is related to the paper "Evaluation of Speech Representations fo
 
 It will soon be available for download.
 
+## Download Checkpoints
+
+It will soon be available for download.
+
 ## Requirements
 
 To install the requirements, create a virtual environment in Conda:
@@ -27,7 +31,7 @@ $ conda env create -f environment.yml
 
 To perform the extraction of embeddings, use the scripts available in the extract_emb folder.
 
-## Treinamento
+## Training
 
 To run the training, the first step is to create a .json file used for configuring the training parameters. Examples of this file can be found in the configs folder.
 
@@ -37,7 +41,7 @@ To execute the training, run the following command
 $ python train.py -c configs/config_model.json
 ```
 
-## Test
+## Testing
 
 To evaluate your model, run the following command:
 
