@@ -52,7 +52,7 @@ $ python test.py -c configs/config_model.json
 ## Citation
 
 ```
-@inproceedings{cmltts,
+@inproceedings{brspeech-mos,
   title={Evaluation of Speech Representations for MOS prediction},
   author={Oliveira, Frederico S. and Casanova, Edresson and Junior, Arnaldo Candido and Gris, Lucas R. S. and Soares, Anderson S. and Galvão, Arlindo},
   booktitle={International Conference on Text, Speech, and Dialogue},
