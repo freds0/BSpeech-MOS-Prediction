@@ -6,6 +6,12 @@ from os import makedirs
 from tqdm import tqdm
 from glob import glob
 
+'''
+Download checkpoints and config:
+wget -c https://github.com/coqui-ai/TTS/releases/download/speaker_encoder_model/model_se.pth.tar
+wget -c https://github.com/coqui-ai/TTS/releases/download/speaker_encoder_model/config_se.json
+'''
+
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 use_cuda = torch.cuda.is_available()
 
