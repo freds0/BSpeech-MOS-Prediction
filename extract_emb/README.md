@@ -126,3 +126,9 @@ Then just activate the virtual environment:
 ```bash
 conda activate yourtts
 ```
+
+Download checkpoints and config:
+```
+wget -c https://github.com/coqui-ai/TTS/releases/download/speaker_encoder_model/model_se.pth.tar
+wget -c https://github.com/coqui-ai/TTS/releases/download/speaker_encoder_model/config_se.json
+```
