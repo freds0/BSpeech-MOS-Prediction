@@ -5,7 +5,7 @@ This repository is related to the paper "Evaluation of Speech Representations fo
 
 ## Download Dataset
 
-It will soon be available for download.
+(Google Drive)[https://drive.google.com/file/d/1_nSqIzFzvDdmIaJB6uxjhJ20pnZJA7ru/view?usp=drive_link]
 
 ## Download Checkpoints
 
