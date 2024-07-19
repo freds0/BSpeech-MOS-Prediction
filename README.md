@@ -5,11 +5,9 @@ This repository is related to the paper "Evaluation of Speech Representations fo
 
 ## Download Dataset
 
-(Google Drive)[https://drive.google.com/file/d/1_nSqIzFzvDdmIaJB6uxjhJ20pnZJA7ru/view?usp=drive_link]
+- [Google Drive](https://drive.google.com/file/d/1_nSqIzFzvDdmIaJB6uxjhJ20pnZJA7ru/view?usp=drive_link)
+- [One Drive](https://ufmtbr-my.sharepoint.com/:u:/g/personal/frederico_oliveira_ufmt_br/ERGXsp4t10ZOmNpGUx2Z_moBWMuinZU8lztW26OogD17-A?e=2Zv0QN)
 
-## Download Checkpoints
-
-It will soon be available for download.
 
 ## Requirements
 
